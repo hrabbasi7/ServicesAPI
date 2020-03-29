@@ -1,0 +1,482 @@
+package com.i2c.billpaymentschedularservice.FTPService;
+
+import cz.dhl.ftp.*;
+import cz.dhl.io.CoFile;
+import cz.dhl.io.CoLoad;
+import cz.dhl.io.LocalFile;
+
+import java.io.*;
+import java.util.ArrayList;
+
+
+import com.i2c.service.util.Constants;
+import com.i2c.service.util.CommonUtilities;
+
+/**
+ *
+ * @author Haroon ur Rashid Abbasi
+ * Created @ Sep 18, 2005 11:22:09 AM
+ * @
+ */
+public class JFtp {
+
+    private FtpConnect con = null;
+    private Ftp ftp = null;
+    private String ftpAddress = null;
+    private String ftpPort = null;
+    private String ftpUser = null;
+    private String ftpPassword = null;
+    private String ftpPath = null;
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:22:53 AM
+     *
+     */
+    public JFtp() {
+
+    }
+    private JFtp(String ftpAddress, String ftpPort, String ftpUser,
+                           String ftpPassword, String ftpPath) {
+      this.ftpAddress = ftpAddress;
+      this.ftpPort = ftpPort;
+      this.ftpUser = ftpUser;
+      this.ftpPassword = ftpPassword;
+      this.ftpPath = ftpPath;
+
+    }
+    public JFtp(FTPInfoVO ftpVo) {
+      this.ftpAddress = ftpVo.getFtpAddress();
+      this.ftpPort = ftpVo.getFtpPort();
+      this.ftpUser = ftpVo.getFtpUserId();
+      this.ftpPassword = ftpVo.getFtpPassword();
+      this.ftpPath = ftpVo.getFtpRemotePath();
+    }
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:23:11 AM
+     * @param ftpAddress
+     * @param ftpPort
+     * @param strUser
+     * @param strPassword
+     * @return
+     * @throws IOException
+     */
+    public boolean connect() throws IOException {
+        this.con = FtpConnect.newConnect(ftpAddress + ":" + ftpPort);
+
+        if (ftpUser == null || ftpUser != "") {
+            con.setUserName(ftpUser);
+        }
+        if (ftpPassword == null || ftpPassword != "") {
+            con.setPassWord(ftpPassword);
+        }
+        this.ftp = new Ftp();
+
+        try {
+          if (ftpPath == null || ftpPath != "") {
+              con.setPathName(ftpPath);
+          }
+            if (ftp.connect(con)) {
+                System.out.println("****FTP Connection successfull*****");
+//				APPLogger.logger.info("exit :FTP Connection successfull.");
+                return true;
+            } else {
+                System.out.println("****FTP Connection FAILED*****");
+                //				APPLogger.logger.info("exit :FTP Connection FAILED.");
+                return false;
+            }
+
+        } catch (IOException e) {
+            System.out.println(
+                    "Exception:FTP Connection FAILED. due to Net Work Problem: Connect @JFTP");
+            throw e;
+        }
+
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:23:25 AM
+     *
+     */
+    public void disconnect() {
+        if (ftp != null) {
+            ftp.disconnect();
+        }
+        System.out.println("Disconnect Successful.");
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:24:03 AM
+     * @param ftpFile
+     * @return
+     */
+    public static boolean compareFile(CoFile ftpFile) {
+        boolean exists = (new File(ftpFile.getName())).exists();
+        String str = ftpFile.getName();
+
+        if (exists) { // if same file already exists, then check its
+            File localFile = new File(Constants.FTP_DOWNLOAD_PATH +
+                                      File.separator + ftpFile.getName());
+            String strftp = ftpFile.lastModifiedString();
+
+            //long ftpFileLen = ftpFile.length();
+            // long localFileLen = localFile.length();
+            //Date dt = new Date(localFile);
+            //String strDt = dt.toString();
+            // modify date.
+            long nSize = localFile.length() - ftpFile.length();
+            if (nSize < 1) {
+                nSize = nSize * ( -1);
+            }
+
+            long nDate = ftpFile.lastModified() - localFile.lastModified();
+            if (nDate < 1) {
+                nDate = nDate * ( -1);
+            }
+
+            if (nDate < 59999 || nSize <= 2) {
+                return true;
+            } else { // FTP file has more recent modified date...or It has not been copied correctly.
+                return false;
+            }
+
+        }
+
+        return false; // file not found
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:24:18 AM
+     * @param strPath
+     * @return
+     * @throws IOException
+     */
+    public boolean upload(String strPath) throws IOException {
+      boolean isUploaded = false;
+      System.out.println("Upload @JFTP");
+        // check if connected
+        if (ftp == null || con == null) {
+            return isUploaded;
+        }
+
+        int startPos = strPath.lastIndexOf(File.separator) + 1;
+        String strFile = strPath.substring(startPos, strPath.length());
+        System.out.println("Upload File Name ----->>" + strFile);
+
+        FtpOutputStream os = null;
+
+        FtpFile file = new FtpFile(strFile, ftp);
+
+        String strLine = new String();
+        char chArr[] = new char[1024];
+        try {
+
+            os = new FtpOutputStream(file);
+            OutputStreamWriter osw = new OutputStreamWriter(os);
+            //Open file for reading
+            FileInputStream fstream = new FileInputStream(strPath);
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+            while (br.read(chArr) != -1) {
+                osw.write(chArr);
+                osw.flush();
+                chArr = null;
+                chArr = new char[1024];
+            }
+            in.close();
+            fstream.close();
+            br.close();
+            os.close();
+            osw.close();
+            isUploaded = true;
+          } catch (IOException ioe) {
+            System.out.println("FTP upload IO exception = " + ioe);
+            isUploaded = false;
+            throw ioe;
+
+          } catch (Exception e) {
+            System.out.println("General exception = " + e);
+            isUploaded = false;
+          }
+
+        return isUploaded;
+
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:24:35 AM
+     * @param msgs
+     * @return
+     * @throws IOException
+     */
+    public int uploadAll(ArrayList msgs) throws IOException {
+//		APPLogger.logger.info("Upload ALL @JFTP");
+        System.out.println("Upload ALL @JFTP");
+        int numOfFiles = 0;
+        // check if connected
+        if (ftp == null || con == null) {
+          throw new IOException("Connection not Established....");
+//          return numOfFiles;
+        }
+
+        int nCnt = 0;
+
+        String srcPath = Constants.FTP_DOWNLOAD_PATH+ File.separator +
+                         Constants.FTP_UPLOAD_FOLDER;
+        String targetPath = srcPath + File.separator +
+                            Constants.EXPORTED_FOLDER;
+        File list = new File(srcPath);
+        File files[] = list.listFiles();
+        System.out.println("Path...." + srcPath);
+
+        try {
+
+            if (files != null) {
+                System.out.println("=====================================");
+                System.out.println(files.length + " Matching Files found. at " +
+                                   srcPath);
+                System.out.println("=====================================");
+
+                for (nCnt = 0; nCnt < files.length; nCnt++) {
+                    System.out.println(files[nCnt].getName());
+
+                    copyOnFtp(files[nCnt]);
+//		CommonUtilities.copyOnFolder(files[nCnt],srcPath, targetPath);
+                    msgs.add("File '" + files[nCnt].getName() +
+                             "' has been uploaded. ");
+                    files[nCnt].delete();
+                    numOfFiles++;
+                }
+
+            }
+
+        }
+
+        catch (IOException ioe) {
+
+//			APPLogger.logger.error("Errror Occur on  file, "+files[nCnt]+" Exception : " + ioe);
+            System.out.println("Errror Occur on  file, " + files[nCnt] +
+                               " Exception : " + ioe);
+            throw ioe;
+
+        } catch (Exception e) {
+            System.out.println("General exception = " + e);
+            e.printStackTrace();
+//			APPLogger.logger.error(" Exception : " + e);
+
+
+        }
+
+        return numOfFiles;
+
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:25:08 AM
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    public boolean copyOnFtp(File file) throws IOException {
+        try {
+
+            FtpOutputStream os = null;
+            FtpFile ftpFile = null;
+            char chArr[] = new char[1024];
+
+            String fileName = File.separator + Constants.FTP_UPLOAD_FOLDER +
+                              File.separator + file.getName();
+            String srcPath = Constants.SIGMA_EXPORT_PATH + File.separator +
+                             Constants.FTP_UPLOAD_FOLDER;
+            System.out.println("********************");
+            System.out.println(fileName);
+            System.out.println("********************");
+            ftpFile = new FtpFile(fileName, ftp);
+            os = new FtpOutputStream(ftpFile);
+            OutputStreamWriter osw = new OutputStreamWriter(os);
+            //Open file for reading
+            FileInputStream fstream = new FileInputStream(srcPath +
+                    File.separator + file.getName());
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+            while (br.read(chArr) != -1) {
+                osw.write(chArr);
+                osw.flush();
+                chArr = null;
+                chArr = new char[1024];
+            }
+
+            in.close();
+            fstream.close();
+            br.close();
+            os.close();
+            osw.close();
+        } catch (IOException ioe) {
+            System.out.println("IO exception = " + ioe);
+            throw ioe;
+
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:25:38 AM
+     * @param msgs
+     * @return
+     * @throws IOException
+     */
+    public ArrayList downloadAll() throws IOException {
+
+      String fullPath = Constants.FTP_DOWNLOAD_PATH + File.separator +
+          Constants.FTP_DOWNLOAD_FOLDER;
+      System.out.println("Download Path : " + fullPath);
+      CommonUtilities.createFolder(fullPath);
+      System.out.println("Download All @JFTP");
+      // check if connected
+      if (ftp == null || con == null) {
+        throw new IOException("Connection Not Established...");
+//        return null;
+      }
+      ArrayList fileList = new ArrayList();
+      FtpInputStream ftpInput = null;
+
+        try {
+//            String line;
+            /* get current directory on FTP*/
+            CoFile dir = new FtpFile(ftp.pwd() +
+                                     Constants.FTP_DOWNLOAD_FOLDER, ftp);
+
+            /* get the list current directory */
+            CoFile fls[] = dir.listCoFiles();
+            if (fls != null) {
+
+                System.out.println("=====================================");
+                System.out.println(fls.length +
+                                   " Matching Files found. at FTP Site");
+                System.out.println("=====================================");
+                for (int n = 0; n < fls.length; n++) {
+                    if (fls[n].isDirectory()) { // sub directory files are not read
+                        continue;
+                    }
+
+                    if (compareFile(fls[n])) {
+                        System.out.println(fls[n].getName() +
+                                           " already exists....");
+                        continue;
+                    }
+
+                    /* destination LocalFile home dir */
+                    CoFile to = new LocalFile(fullPath, fls[n].getName());
+                    /* download file to home dir*/
+                    System.out.println(fls[n].getName() + " is being copied :" +
+                                       CoLoad.copy(to, fls[n]));
+
+                    File fil = new File(fullPath + File.separator + to.getName());
+                    fil.setLastModified(fls[n].lastModified());
+                    fileList.add(fil.getName());
+                    fls[n].delete();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("IOException : Download All @JFTP" + e);
+            throw e;
+        } finally {
+            if (ftpInput != null) {
+                try {
+                    ftpInput.close();
+                } catch (IOException e) {
+//	APPLogger.logger.error("IOException : Download All in finally block  @JFTP" +  e);
+                    throw e;
+                }
+            }
+        }
+//		APPLogger.logger.info("exit true : Download All @JFTP");
+        return fileList;
+    }
+
+
+    /**
+     *
+     * @author Haroon ur Rashid Abbasi
+     * Created @ Sep 18, 2005 11:25:53 AM
+     * @param strFile
+     * @return
+     * @throws IOException
+     */
+    public boolean download(String strFile) throws IOException {
+      boolean isDownload = false;
+      System.out.println("Download @JFTP");
+        //	 check if connected
+        if (ftp == null || con == null || strFile == null) {
+            System.out.println("exit false : Download @JFTP");
+            return false;
+        }
+
+        FtpInputStream ftpInput = null;
+
+        try {
+            String line;
+
+            /* get current directory on FTP*/
+            CoFile dir = new FtpFile(ftp.pwd(), ftp);
+
+            /* get the list current directory */
+            CoFile fls[] = dir.listCoFiles();
+            if (fls != null) {
+                for (int n = 0; n < fls.length; n++) {
+                    if (strFile.equals(fls[n].getName())) {
+                        if (compareFile(fls[n])) {
+                            System.out.println(fls[n].getName() +
+                                               " already exists....");
+                            continue;
+                        }
+
+                        /* destination LocalFile home dir */
+                        CoFile to = new LocalFile(Constants.FTP_DOWNLOAD_FOLDER,
+                                                  fls[n].getName());
+                        /* download file to home dir*/
+                        System.out.println(fls[n].getName() +
+                                           " is being copied :" +
+                                           CoLoad.copy(to, fls[n]));
+
+                        File fil = new File(Constants.FTP_DOWNLOAD_FOLDER +
+                                            File.separator + to.getName());
+                        fil.setLastModified(fls[n].lastModified());
+                        isDownload = true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("IOException : " + e.getStackTrace());
+            throw e;
+        } finally {
+            if (ftpInput != null) {
+                try {
+                    ftpInput.close();
+                } catch (IOException e) {
+//			APPLogger.logger.error("IOException : " +  e.getStackTrace());
+                    throw e;
+                }
+            }
+        }
+
+        return isDownload;
+    }
+}

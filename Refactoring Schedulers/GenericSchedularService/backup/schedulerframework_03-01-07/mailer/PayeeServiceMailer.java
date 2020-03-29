@@ -1,0 +1,319 @@
+package com.i2c.schedulerframework.mailer;
+
+import java.util.Vector;
+import com.i2c.schedulerframework.dao.MailMsgDAO;
+import com.i2c.schedulerframework.util.BaseConstants;
+import com.i2c.schedulerframework.util.CommonUtilities;
+import com.i2c.schedulerframework.mailer.AdminMailService;
+
+import javax.mail.Session;
+import javax.mail.Message;
+import javax.mail.Transport;
+
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.InternetAddress;
+
+import java.util.Properties;
+
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.sql.Connection;
+import java.util.logging.Logger;
+import com.i2c.utils.logging.I2cLogger;
+
+public class PayeeServiceMailer {
+
+  private String emailID = null;
+  private String instanceName = null;
+  private String machineIP = null;
+  private String exceptionMsg = null;
+  private String stackTrace = null;
+  private String additionalMessage = null;
+  private boolean isHTMLText = false;
+  private Connection dbConn = null;
+  private Logger lgr = null;
+
+  public PayeeServiceMailer(String emailID, String instanceName, String machineIP,
+                     Logger lgr) {
+    this.emailID = emailID;
+    this.instanceName = instanceName;
+    this.machineIP = machineIP;
+    this.additionalMessage = null;
+    this.exceptionMsg = null;
+    this.stackTrace = null;
+    this.isHTMLText = false;
+    this.lgr = lgr;
+  }
+
+  public PayeeServiceMailer(String emailID, String instanceName, String machineIP,
+                     String additionalMessage, Connection dbConn, Logger lgr) {
+    this.emailID = emailID;
+    this.instanceName = instanceName;
+    this.machineIP = machineIP;
+    this.additionalMessage = additionalMessage;
+    this.exceptionMsg = null;
+    this.stackTrace = null;
+    this.isHTMLText = false;
+    this.dbConn = dbConn;
+    this.lgr = lgr;
+  }
+
+  public PayeeServiceMailer(String emailID, String instanceName, String machineIP,
+                     String exceptionMsg, String stackTrace, Connection dbConn,
+                     Logger lgr) {
+    this.emailID = emailID;
+    this.instanceName = instanceName;
+    this.machineIP = machineIP;
+    this.exceptionMsg = exceptionMsg;
+    this.stackTrace = stackTrace;
+    this.additionalMessage = null;
+    this.isHTMLText = false;
+    this.dbConn = dbConn;
+    this.lgr = lgr;
+  }
+
+  public boolean sendEmailNotification() throws Exception {
+    boolean isSent = false;
+    AdminMailService mailSender = null;
+    Vector mailInfo = null;
+
+    String fromAddress = null;
+    String toAddress = null;
+    String subject = null;
+    String msgHdr = null;
+    String msgBdy = null;
+    String msgFtr = null;
+
+    String mailMsg = null;
+
+    lgr.log(I2cLogger.FINEST,
+            "PayeeServiceMailer --- Method for sending mail Message --->");
+
+    mailInfo = getMailInfo();
+
+    lgr.log(I2cLogger.FINEST,
+            "PayeeServiceMailer --- Method for sending mail Message --- Mail Info size got --->" +
+            mailInfo.size());
+    if (mailInfo != null && mailInfo.size() > 0) {
+      if (mailInfo.elementAt(0) != null) {
+        fromAddress = mailInfo.elementAt(0).toString().trim();
+      }
+      if (mailInfo.elementAt(1) != null) {
+        toAddress = mailInfo.elementAt(1).toString().trim();
+      }
+      if (mailInfo.elementAt(2) != null) {
+        subject = mailInfo.elementAt(2).toString().trim();
+      }
+      if (mailInfo.elementAt(3) != null) {
+        msgHdr = mailInfo.elementAt(3).toString().trim();
+      }
+      if (mailInfo.elementAt(4) != null) {
+        msgBdy = mailInfo.elementAt(4).toString().trim();
+      }
+      if (mailInfo.elementAt(5) != null) {
+        msgFtr = mailInfo.elementAt(5).toString().trim();
+      }
+
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Method for sending mail Message --- Mail Info got --- From--->" +
+              fromAddress +
+              "<--TO--->" + toAddress + "<--Subject--->" + subject +
+              "<--Msg Hdr--->" + msgHdr + "<--Msg Body--->" + msgBdy +
+              "<--Msg Ftr--->" + msgFtr);
+      mailMsg = prepareMessage(msgHdr, msgBdy, msgFtr);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Method for sending mail Message --- Final Msg Built");
+
+      if (fromAddress != null && fromAddress.trim().length() > 0 && toAddress != null &&
+          toAddress.trim().length() > 0 && mailMsg != null &&
+          mailMsg.trim().length() > 0) {
+
+        lgr.log(I2cLogger.FINEST,
+                "PayeeServiceMailer --- Method for sending mail Message --- Sending Mail Message");
+
+        if (isHTMLText) {
+          sendHTMLMessage(fromAddress, toAddress, subject, mailMsg);
+        }
+        else {
+          mailSender = new AdminMailService(mailMsg, subject, toAddress,
+                                            fromAddress);
+          mailSender.start();
+        }
+        isSent = true;
+      }
+      else {
+        lgr.log(I2cLogger.WARNING,
+                "PayeeServiceMailer --- Method for sending mail Message --- Mandatory Attributes for sending email are missing --- Cannot Send email");
+        throw new Exception("Payee Service --- Mandatory Attributes for sending email are missing --- Cannot Send email--->" +
+                            emailID);
+      }
+    }
+    else {
+      lgr.log(I2cLogger.WARNING,
+              "PayeeServiceMailer --- Method for sending mail Message --- Cannot Send email -- No email Info is found in emails table for email id---> " +
+              emailID);
+      throw new Exception("Payee Service --- Cannot Send email -- No email Info is found in emails table for email id---> " +
+                          emailID);
+    }
+    return isSent;
+  }
+
+  private String prepareMessage(String msgHdr, String msgBody, String msgFtr) {
+    StringBuffer message = new StringBuffer();
+
+    if (msgHdr != null && msgHdr.trim().length() > 0) {
+      msgHdr = CommonUtilities.emailTokenizer(msgHdr,
+                                              BaseConstants.
+                                              MAIL_MSG_DELIMETER_STRING);
+      message.append(msgHdr);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (msgBody != null && msgBody.trim().length() > 0) {
+      message.append("\n\n");
+      message.append(msgBody);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (additionalMessage == null && instanceName != null &&
+        instanceName.trim().length() > 0) {
+      message.append("\n\n");
+      message.append("Instance Name: " + instanceName);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (machineIP != null && machineIP.trim().length() > 0) {
+      message.append("\n\n");
+      message.append("Machine IP: " + machineIP);
+
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+
+    if (additionalMessage != null && additionalMessage.length() > 0) {
+//      message.append("\n\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+      message.append("\n\n");
+      message.append(additionalMessage);
+//      message.append("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (exceptionMsg != null && exceptionMsg.trim().length() > 0) {
+      message.append("\n\n");
+      message.append("Exception Message: " + exceptionMsg);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (stackTrace != null && stackTrace.trim().length() > 0) {
+      message.append("\n\n");
+      message.append("Stack Trace: " + stackTrace);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    if (msgFtr != null && msgFtr.trim().length() > 0) {
+      message.append("\n\n");
+      message.append(msgFtr);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Mail Msg build so far --->" + message);
+    }
+    return message.toString();
+  }
+
+  private Vector getMailInfo() {
+    Vector info = null;
+    MailMsgDAO mailHnd = null;
+
+    try {
+
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Method for getting mail info for email id --->" +
+              emailID);
+      mailHnd = new MailMsgDAO(emailID);
+      info = mailHnd.getMailInfo(dbConn);
+      lgr.log(I2cLogger.FINEST,
+              "PayeeServiceMailer --- Vector size of mail info --->" +
+              info.size());
+    }
+    catch (Exception ex) {
+      lgr.log(I2cLogger.WARNING,
+              "PayeeServiceMailer --- Excpetion in getting mail info --->" + ex);
+    }
+    return info;
+  }
+
+  private void sendHTMLMessage(String from, String to, String subject,
+                               String msg) {
+
+    boolean debug = false;
+    String recipientsTO[] = null;
+    Date mailSentDate = null;
+
+    try {
+      lgr.log(I2cLogger.FINEST,
+              " PayeeServiceMailer --- sendHTMLMessage ---  Method for sending HTML success notification");
+      lgr.log(I2cLogger.FINEST,
+              " PayeeServiceMailer --- sendHTMLMessage ---  Info received --- From--->" +
+              from + "<--To--->" + to + "<--Subject--->" + subject +
+              "<---Message--->" + msg);
+      recipientsTO = CommonUtilities.convertStringArray(to,
+          BaseConstants.DEFAULT_DELIMETER_STRING);
+      //Set the host smtp address
+      Properties props = new Properties();
+      props.put("mail.smtp.host", BaseConstants.MAIL_SMTP);
+
+      // create some properties and get the default Session
+      Session session = Session.getDefaultInstance(props, null);
+      session.setDebug(debug);
+
+      // create a message
+      Message mailMsg = new MimeMessage(session);
+
+      // set the from and to address
+      InternetAddress addressFrom = new InternetAddress(from);
+      mailMsg.setFrom(addressFrom);
+
+      InternetAddress[] addressTo = new InternetAddress[recipientsTO.length];
+      for (int i = 0; i < recipientsTO.length; i++) {
+        addressTo[i] = new InternetAddress(recipientsTO[i]);
+      }
+      mailMsg.setRecipients(Message.RecipientType.TO, addressTo);
+
+      // Setting the Subject and Content Type
+      mailMsg.setSubject(subject);
+      mailMsg.setContent(msg, "text/html");
+
+      mailSentDate = getMailSentDate();
+      if (mailSentDate != null) {
+        mailMsg.setSentDate(mailSentDate);
+      }
+      Transport.send(mailMsg);
+    } //end try
+    catch (Exception ex) {
+      lgr.log(I2cLogger.WARNING,
+              " PayeeServiceMailer --- sendHTMLMessage ---  Exception in sending success email notification--> " +
+              ex);
+    }
+  } //end method
+
+  private Date getMailSentDate() {
+    Date sentDate = null;
+    SimpleDateFormat sdf = new SimpleDateFormat();
+    String date = null;
+    try {
+      date = CommonUtilities.getCurrentFormatDateTime(BaseConstants.
+          ACH_DATE_TIME_FORMAT);
+      if (date != null && date.trim().length() > 0) {
+        sentDate = sdf.parse(date);
+        lgr.log(I2cLogger.FINEST,
+                " PayeeServiceMailer --- getMailSentDate --- Got Sent Mail Date--> " +
+                sentDate);
+      }
+    }
+    catch (Exception ex) {
+      lgr.log(I2cLogger.WARNING,
+              " PayeeServiceMailer --- getMailSentDate --- Exception in getting Sent Mail Date--> " +
+              ex);
+    }
+    return sentDate;
+  } //end method
+} //end class

@@ -1,0 +1,9 @@
+[PropertyInfo]
+campaingInstId,int,false,false,campaingInstId,campaingInstId,true,<default>
+channelId,String,false,false,channelId,channelId,true,<default>
+recipientId,int,false,false,recipientId,recipientId,true,<default>
+[IconNames]
+
+
+
+

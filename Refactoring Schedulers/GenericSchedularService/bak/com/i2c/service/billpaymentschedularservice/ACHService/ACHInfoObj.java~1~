@@ -1,0 +1,147 @@
+package com.i2c.service.schedularservice.ACHService;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHInfoObj {
+  private String scheduledDateTime = null;
+  private String currentDateTime = null;
+  private String scheduledODFI = null;
+  private long timeDifference = -1;
+  //----------------------------FTPS Attributes-------------------------------//
+
+  private String achODFIDesc = null;
+  private String ftpsAddress = null;
+  private String ftpsPort = null;
+  private String ftpsUser = null;
+  private String ftpsPassword = null;
+  private String ftpsPath = null;
+  private String ftpsReturnPath = null;
+  private String serverCertFile = null;
+  private String toEmailAddress = null;
+  private String ftpType = null ;
+
+
+  public String getScheduledDateTime() {
+    return scheduledDateTime;
+  }
+
+  public String getScheduledODFI() {
+    return scheduledODFI;
+  }
+
+  public long getTimeDifference() {
+    return timeDifference;
+  }
+
+  public void setScheduledDateTime(String scheduledDateTime) {
+    this.scheduledDateTime = scheduledDateTime;
+  }
+
+  public void setScheduledODFI(String scheduledODFI) {
+    this.scheduledODFI = scheduledODFI;
+  }
+
+  public void setTimeDifference(long timeDifference) {
+    this.timeDifference = timeDifference;
+  }
+  public String getCurrentDateTime() {
+    return currentDateTime;
+  }
+  public void setCurrentDateTime(String currentDateTime) {
+    this.currentDateTime = currentDateTime;
+  }
+
+  public String getAchODFIDesc()
+  {
+    return achODFIDesc;
+  }
+
+  public String getFtpsAddress()
+  {
+    return ftpsAddress;
+  }
+
+  public String getFtpsPort() {
+    return ftpsPort;
+  }
+
+  public String getFtpsUser() {
+    return ftpsUser;
+  }
+
+  public String getFtpsPassword() {
+    return ftpsPassword;
+  }
+
+  public String getFtpsPath() {
+    return ftpsPath;
+  }
+
+  public String getFtpsReturnPath()
+  {
+   return ftpsReturnPath;
+  }
+
+
+  public String getServerCertFile() {
+    return serverCertFile;
+  }
+
+  public String getToEmailAddress() {
+    return toEmailAddress;
+  }
+
+  public String getFtpType() {
+    return ftpType;
+  }
+
+  public void setAchODFIDesc(String _achODFIDesc)
+  {
+     achODFIDesc=_achODFIDesc;
+  }
+
+  public void setFtpsAddress(String _ftpsAddress) {
+     ftpsAddress=_ftpsAddress;
+  }
+
+  public void setFtpsPort(String _ftpsPort) {
+     ftpsPort=_ftpsPort;
+  }
+
+  public void setFtpsUser(String _ftpsUser) {
+     ftpsUser=_ftpsUser;
+  }
+
+  public void setFtpsPassword(String _ftpsPassword) {
+     ftpsPassword=_ftpsPassword;
+  }
+
+  public void setFtpsPath(String _ftpsPath) {
+     ftpsPath=_ftpsPath;
+  }
+
+  public void setFtpsReturnPath(String _ftpsReturnPath) {
+     ftpsReturnPath=_ftpsReturnPath;
+  }
+
+
+  public void setServerCertFile(String _serverCertFile) {
+     serverCertFile=_serverCertFile;
+  }
+
+  public void setToEmailAddress(String _toEmailAddress) {
+     toEmailAddress=_toEmailAddress;
+  }
+
+  public void setFtpType(String ftpType) {
+    this.ftpType = ftpType;
+  }
+
+}//end class

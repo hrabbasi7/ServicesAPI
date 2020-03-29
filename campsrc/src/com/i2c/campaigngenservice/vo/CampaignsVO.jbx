@@ -1,0 +1,42 @@
+[PropertyInfo]
+campaignDesc,String,false,false, , ,true,<default>
+campaignId,int,false,false, , ,true,<default>
+campaignInstId,int,false,false,campaignInstId,campaignInstId,true,<default>
+campaignName,String,false,false,campaignName,campaignName,true,<default>
+campAttachFileId,int,false,false, , ,true,<default>
+campAttachFileIvrId,int,false,false, , ,true,<default>
+campBusinessDays,String,false,false, , ,true,<default>
+campBusinessDaysFlag,String,false,false, , ,true,<default>
+campCouponProgId,String,false,false, , ,true,<default>
+campCreationDate,java.sql.Date,false,false, , ,true,<default>
+campCreationTime,java.sql.Date,false,false, , ,true,<default>
+campCreatorUserId,String,false,false, , ,true,<default>
+campFreqMap,String,false,false, , ,true,<default>
+campFreqType,String,false,false, , ,true,<default>
+campIsForEmail,String,false,false, , ,true,<default>
+campIsForFax,String,false,false, , ,true,<default>
+campIsForIvr,String,false,false, , ,true,<default>
+campIsForSms,String,false,false, , ,true,<default>
+campIsForWebsite,String,false,false, , ,true,<default>
+campIsModified,String,false,false, , ,true,<default>
+campMessageBody,String,false,false, , ,true,<default>
+campRecipientFlag,String,false,false, , ,true,<default>
+campReminderIntervalNunits,String,false,false, , ,true,<default>
+campReminderIntervalUnit,String,false,false, , ,true,<default>
+campReminders,int,false,false, , ,true,<default>
+campRemindersDone,int,false,false,campRemindersDone,campRemindersDone,true,<default>
+campSchdNextDtime,java.sql.Date,false,false, , ,true,<default>
+campSchdStartDate,java.sql.Date,false,false, , ,true,<default>
+campSchdTimeSlot,String,false,false, , ,true,<default>
+campSmsMessage,String,false,false, , ,true,<default>
+campStatusId,String,false,false, , ,true,<default>
+campSubject,String,false,false, , ,true,<default>
+campTerminiationBasis,String,false,false, , ,true,<default>
+campTerminiationDate,java.sql.Date,false,false, , ,true,<default>
+campTerminiationFreq,int,false,false, , ,true,<default>
+campFromEmail,String,false,false,campFromEmail,campFromEmail,true,<default>
+[IconNames]
+
+
+
+

@@ -1,0 +1,10 @@
+********************************************* Balance Alert *************************************************
+Dear Customer,
+
+	This is to inform you that the balance of your card number $cardNumber is currently $operator the balance threshold($limit).
+	
+ 	Current Balance: 	$cardBalance
+	Balance Threshold: 	$limit                                                                                        
+
+*************************************************************************************************************                 
+$footer 

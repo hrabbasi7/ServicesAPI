@@ -1,0 +1,13 @@
+******************************************* Credit Posted Alert **********************************************
+Dear Customer,
+
+This is to inform you the following transaction on your card number $cardNumber is $operator the specified credit posted alert limit ($limit).
+
+ Transaction Amount: 	$amount
+ Transaction Description: 	$desc
+ Current Balance: 		$cardBalance
+ Credit Posted Limit: 	$limit
+
+*************************************************************************************************************
+
+$footer

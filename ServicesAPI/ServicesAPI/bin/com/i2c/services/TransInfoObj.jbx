@@ -1,0 +1,14 @@
+[PropertyInfo]
+transId,String,false,false, , ,false, 
+accountNo,String,false,false, , ,false, 
+transTypeId,String,false,false, , ,false, 
+transDate,String,false,false, , ,false, 
+businessDate,String,false,false, , ,false, 
+accpNameAndLoc,String,false,false, , ,false, 
+amount,String,false,false, , ,false, 
+description,String,false,false, , ,false, 
+[IconNames]
+
+
+
+

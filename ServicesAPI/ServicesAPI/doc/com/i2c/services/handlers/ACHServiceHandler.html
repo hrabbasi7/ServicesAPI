@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class com.i2c.services.handlers.ACHServiceHandler</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">com.i2c.services.handlers</FONT>
+<BR>Class ACHServiceHandler</H2>
+<DL>
+<DT>public class <B>ACHServiceHandler</B>
+</DL>
+<DL><DD><p>Title: ACHServiceHandler</p> <p>Description: This class provides Services For ACH </p> <p>Copyright: Copyright (c) 2004</p> <p>Company: I2c Inc</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Agohar</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Constructor Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>ACHServiceHandler</H3>
+<PRE>
+private <B>ACHServiceHandler</B>(java.sql.Connection&nbsp;con)</PRE>
+<DL><DD><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>con</CODE> - Connection</DD>
+</DL>
+<HR>
+
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>getInstance</H3>
+<PRE>
+public static com.i2c.services.handlers.ACHServiceHandler <B>getInstance</B>(java.sql.Connection&nbsp;_con)</PRE>
+<DL><DD><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection</DD>
+<DT><B>Returns:</B><DD>ACHServiceHandler</DD>
+</DL>
+<HR>
+
+<H3>createACHAccount</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>createACHAccount</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to create the ACH Account<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>verifyAchAccount</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>verifyAchAccount</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to verify the supplied ACH Account<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getAchAccountStatus</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>getAchAccountStatus</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the ACH Account Status<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>changeAchAccountNick</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>changeAchAccountNick</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to change the ACH Account Nick name<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>changeACHAccountInfo</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>changeACHAccountInfo</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to change the ACH Account information for Withdraw Account only<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getACHAccountInfo</H3>
+<PRE>
+public com.i2c.services.ServicesResponseObj <B>getACHAccountInfo</B>(com.i2c.services.ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the ACH Account information<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request info</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response info</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

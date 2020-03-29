@@ -1,0 +1,1175 @@
+package com.i2c.schedulerframework.util;
+
+import java.io.*;
+import java.sql.*;
+import java.text.*;
+import java.util.*;
+import java.util.logging.*;
+
+import com.i2c.schedulerframework.model.*;
+import com.i2c.schedulerframework.excep.*;
+import com.i2c.schedulerframework.dao.BaseDAO;
+import com.i2c.utils.logging.I2cLogger;
+import com.i2c.schedulerframework.main.MainServiceRunner;
+
+/**
+ * @author hrabbasi
+ *
+ *
+ */
+public class CommonUtilities extends BaseDAO{
+
+  public boolean executeUpdate(String query) throws Exception {
+   return true;
+ }
+
+ public boolean executeInsert(String query) throws Exception {
+   return true;
+ }
+
+ public ArrayList executeSelect(String query) throws Exception {
+   ArrayList arrayList = null;
+   return arrayList;
+ }
+
+
+  /**
+   * Method for adding the days in the date
+   * @param sourceformat: source format of the data
+   * @param date: the source date
+   * @param days: days to be added
+   * @param fianlFormat: final format of the date
+   * @return: the finally added date in the require format
+   */
+  public static String calulateDateInfo(String sourceformat, String date,
+                                        String days, String fianlFormat,
+                                        int timeField) {
+    String newDate = date;
+    SimpleDateFormat sdf = null;
+    GregorianCalendar calcDate = null;
+    try {
+
+      baseLogger.log(I2cLogger.FINEST, "Original Date -->" + date +
+                                      "<-- Days -->" + days);
+      sdf = new SimpleDateFormat(sourceformat);
+      calcDate = new GregorianCalendar();
+      calcDate.setTime(sdf.parse(newDate));
+      calcDate.add(timeField, Integer.parseInt(days));
+      sdf = new SimpleDateFormat(fianlFormat);
+      newDate = sdf.format(calcDate.getTime());
+      baseLogger.log(I2cLogger.FINEST,
+                                      "Final Date -->" + newDate);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "Exception in adding Days method--->" + e);
+    } //end catch
+    return newDate;
+  } //end method
+
+  /**
+   * Method for converting the number into two zero's at the end
+   * @param number: number to be converted into two zero's
+   * @return: final string after conversation
+   */
+  public static String convertTwoZero(String number) {
+    if (number != null) {
+      String sub = number.substring(number.indexOf('.') + 1);
+      if (sub.length() == 1)
+        number += "0";
+      else if (sub.length() == 0)
+        number += "00";
+      else if (sub.length() > 1) {
+        number = number.substring(0, number.indexOf('.')) +
+            number.substring(number.indexOf('.'), number.indexOf('.') + 3);
+      } //end else if
+    } //end null
+    return number;
+  } //end add two zero method
+
+  /**
+   * Method for getting the current system date in DB formatted form
+   * @return : formatted date
+   */
+  public static String getCurrentFormatDate(String format) {
+    String date = "";
+    try {
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      date = sdf.format(new java.util.Date());
+      baseLogger.log(I2cLogger.FINEST,
+                      "<- Current date is ---->" + date);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                      "Exception in Getting DB Format date --->" + e);
+    } //end catch
+    return date;
+  } //end method
+
+  /**
+   * Method for getting the current system time in DB formatted form
+   * @return: formatted system current time
+   */
+  public static String getCurrentFormatTime(String format) {
+    String date = "";
+    try {
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      date = sdf.format(new java.util.Date());
+      baseLogger.log(I2cLogger.FINEST,
+                      " <- Current Time is ---->" + date);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                      "Exception in Getting DB Format Time --->" + e);
+    } //end catch
+    return date;
+  } //end method
+
+  /**
+   * Method for getting the current system date and time in DB formatted fom
+   * @return: formatted date and time
+   */
+  public static String getCurrentFormatDateTime(String format) {
+    String date = "";
+    try {
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      date = sdf.format(new java.util.Date());
+      baseLogger.log(I2cLogger.FINEST,
+                      " <- Current date time is ---->" + date);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                      "Exception in Getting DB Format date time--->" + e);
+    } //end catch
+    return date;
+  } //end method
+
+  /**
+   * Method for converting the date string in the required date format
+   * @param newformat: format in which the date to be converted
+   * @param formatDate: the original format of the date
+   * @param dateValue: the date value
+   * @return: new formated date string
+   */
+  public static String convertDateFormat(String newformat, String formatDate,
+                                         String dateValue) throws
+      ConvertDateFormatExcep {
+    String formattedDate = dateValue;
+
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                      " Convert Date Format Method  ");
+      baseLogger.log(I2cLogger.FINEST,
+                      "The Original Date is  --->" + dateValue);
+      java.util.Date orgdate = new SimpleDateFormat(formatDate).parse(dateValue);
+      formattedDate = new SimpleDateFormat(newformat).format(orgdate);
+      baseLogger.log(I2cLogger.FINEST,
+                      "The Formatted Date is  --->" + formattedDate);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                      "Exception in converting date format --->" + e);
+      throw new ConvertDateFormatExcep(e);
+    } //end catch
+    return formattedDate;
+  } //end method
+
+  /**
+   * Build information into the query
+   * @param query: query to be build
+   * @param info: information to be added in the query
+   * @param lastParam: wheather to add , at the end of query
+   */
+  public static void buildQueryInfo(
+      StringBuffer query,
+      String info,
+      boolean lastParam) {
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+          " In the method for inserting query information ---->" + info);
+      if (info != null)
+        query.append(CommonUtilities.convertValidValue(info));
+      else
+        query.append("null");
+
+      if (!lastParam)
+        query.append(",");
+
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+          "Exception in Build Query Information ----> " + e);
+    } //end catch
+  } //end build query information method
+
+  /**
+   * Method for converting and handling the special characters in the string value
+   * @param value : string to be handle for special characters
+   * @return: final string value after conversion
+   */
+  public static String convertValidValue(String value) {
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                      "<- String to be converted for Special Characters ->" +
+                      value);
+      if (value == null || value.trim().length() < 1)
+        return null;
+      if (value.indexOf("'") > -1)
+        value = value.replaceAll("'", "''");
+      if (value.indexOf("\"") > -1)
+        value = value.replaceAll("\"", "\"\"");
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                      "<---- Exception in converting into Valid values ------>" +
+                      e);
+    } //end catch
+    baseLogger.log(I2cLogger.FINEST,
+                    "<-- Final String After conversion for Special Characters -->" +
+                    value);
+    return "'" + value.trim() + "'";
+  } //end method
+
+  /**
+   * Method for getting the default common logger for information logging
+   * @return: logger object for logging information
+   */
+//  public static Logger getLogger() {
+//    try {
+//      return Log.getLogger(
+//          Constants.COMMON_LOG_INFO,
+//          Constants.COMMON_LOG_INFO);
+//    }
+//    catch (Exception e) {
+//      System.out.println(
+//          "Exception in getLogger() Logging information --->" + e);
+//    } //end catch
+//    return null;
+//  } //end log info method
+
+  /**
+   * Method for logging the information into the file
+   * @param instName: instance name whose logged to be used
+   * @param appName: application name whose logged to be used
+   * @return: logger object for logging the information
+   */
+//  public static Logger getLogger(String instName, String appName) {
+//    try {
+////			System.out.println(
+////				" Get Logger Method Instance Name is -->"
+////					+ instName
+////					+ "<---- Appplication Name -->"
+////					+ appName);
+//      //Passing the Application and the Instance Name
+//      if (instName != null && appName != null) {
+//        Logger logger = Log.getLogger(appName, instName);
+////				System.out.println(" Final Logger -->" + logger);
+//        if (logger != null)
+//          return logger;
+//      } //end if
+//    }
+//    catch (Exception e) {
+//      System.out.println("Exception in Logging information --->" + e);
+//    } //end catch
+//    return Log.getLogger(
+//        Constants.COMMON_LOG_INFO,
+//        Constants.COMMON_LOG_INFO);
+//  } //end log info method
+
+  /**
+   * Method for adding the character padding to the string
+   * @param info: buffer to be padded
+   * @param character: string charcter to be padded in the buffer
+   * @param size: size of the total buffer after padding
+   * @param startPadding: padding at the start of the string or at the end
+   */
+  public static StringBuffer addCharPadding(StringBuffer info, String character,
+                                            int size, boolean frontPadding) {
+    int position = -1;
+    int limit = size - info.length();
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Orginal String for padding is --->" +
+                                      info + "<--- String Size is -->" +
+                                      info.length());
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Character string to be padded is --->" +
+                                      character);
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Size to be padded is --->" + size);
+      for (int i = 0; i < limit; ++i) {
+        if (frontPadding)
+          position = 0;
+        else
+          position = info.length();
+
+        info.insert(position, character);
+      } //end for
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Final String After padding is --->" +
+                                      info + "<--- String Size is -->" +
+                                      info.length());
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "  Exception in Adding Character Padding to the String method --->" +
+                                      e);
+    } //end catch
+    return info;
+  } //end method
+
+  /**
+   * Method for adding the character padding to the string
+   * @param info: buffer to be padded
+   * @param character: string charcter to be padded in the buffer
+   * @param size: size of the total buffer after padding
+   * @param startPadding: padding at the start of the string or at the end
+   */
+  public static StringBuffer addCharPadding(String value, String character,
+                                            int size, boolean startPadding) {
+    int position = -1;
+    int limit = size - value.length();
+    StringBuffer info = new StringBuffer(value);
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                 " Orginal String for padding is --->" +
+                                 info + "<--- String Size is -->" +
+                                 info.length());
+      baseLogger.log(I2cLogger.FINEST,
+                                 " Character string to be padded is --->" +
+                                 character);
+      baseLogger.log(I2cLogger.FINEST,
+                                 " Size to be padded is --->" + size);
+      for (int i = 0; i < limit; ++i) {
+        if (startPadding)
+          position = 0;
+        else
+          position = info.length();
+
+        info.insert(position, character);
+      } //end for
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Final String After padding is --->" +
+                                      info + "<--- String Size is -->" +
+                                      info.length());
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "  Exception in Adding Character Padding to the String method --->" +
+                                      e);
+    } //end catch
+    return info;
+  } //end method
+
+  /**
+   * Method for adding the character padding to the string
+   * @param info: buffer to be padded
+   * @param character: string charcter to be padded in the buffer
+   * @param size: size of the total buffer after padding
+   * @param startPadding: padding at the start of the string or at the end
+   */
+  public static StringBuffer addCharPadding(String value, String character,
+                                            int size, boolean startPadding,
+                                            String fieldDesc) throws
+      InvalidFieldValueExcep {
+    int position = -1;
+    int limit = size - value.trim().length();
+    StringBuffer info = new StringBuffer(value.trim());
+
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Orginal String for padding is --->" +
+                                    info + "<--- String Size is -->" +
+                                    info.length());
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Character string to be padded is --->" +
+                                    character);
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Size to be padded is --->" + size);
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Field Desc --->" + fieldDesc);
+
+    //Checking the field length
+    if (info.length() > size)
+      throw new InvalidFieldValueExcep(0,
+                                       "Invalid Field Length -->" + fieldDesc);
+
+    try {
+      for (int i = 0; i < limit; ++i) {
+        if (startPadding)
+          position = 0;
+        else
+          position = info.length();
+
+        info.insert(position, character);
+      } //end for
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Final String After padding is --->" +
+                                      info + "<--- String Size is -->" +
+                                      info.length());
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "  Exception in Adding Character Padding to the String method --->" +
+                                      e);
+    } //end catch
+    return info;
+  } //end method
+
+  /**
+   * Method for calculating the Check Digit for a string
+   * @param value: the value whose check digit is to be calculated
+   * @return: calculated check digit
+   */
+  public static String calcCheckDigit(String value) {
+    String checkDigit = "";
+    long digitSum = 0;
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      "The Value for Calculating Check Digit is --->" +
+                                      value);
+
+      //Traversing through the Card Numbers
+      for (int i = 0; i < value.length(); ++i) {
+        digitSum +=
+            (int) ( (Integer.parseInt(value.charAt(i) + "") *
+                     Integer.
+                     parseInt(BaseConstants.CHECK_DIGIT_STRING.charAt(i) + "")) /
+                   10)
+            +
+            ( (Integer.parseInt(value.charAt(i) + "") *
+               Integer.parseInt(BaseConstants.CHECK_DIGIT_STRING.charAt(i) + "")) %
+             10);
+      } //end for
+
+      checkDigit = ( (10 - (digitSum % 10)) % 10) + "";
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "Exception in Calculating Check Digit Method --->" +
+                                      ex);
+    } //end catch
+    baseLogger.log(I2cLogger.FINEST,
+                                    "The Final Check Digit is -->" + checkDigit);
+    return checkDigit;
+  } //end calc digit method
+
+  /**
+   * @author abakar
+   * used to get a collection for generating a combo
+   * @param con
+   * @param query
+   * @param defaultOption
+   * @return
+   * @throws Exception
+   */
+  public static ArrayList getCollection(Connection con, String query,
+                                        String defaultOption) throws Exception {
+    ArrayList list = new ArrayList();
+    String[] data = new String[2];
+    ResultSet rs = null;
+    Statement stmt = null;
+
+    try {
+      //add data for default option
+      data[0] = "";
+      data[1] = defaultOption;
+      list.add(data);
+
+      stmt = con.createStatement();
+      rs = stmt.executeQuery(query);
+
+      while (rs.next()) {
+        data = new String[2];
+        data[0] = rs.getString(1);
+        data[1] = rs.getString(2);
+        list.add(data);
+      } //end while
+    } //end try
+    catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    } //end catch
+    finally {
+      if (null != rs)
+        rs.close();
+      if (null != stmt)
+        stmt.close();
+    } //end finally
+
+    return list;
+  } //end method
+
+  /**
+   * @author abakar
+   * concatenates ' at the start and end of a string and return it.
+   */
+  public static String getSingleQuotedString(String string) {
+    return "'" + string + "'";
+  } //end method
+
+  /**
+   * @author abakar
+   * this method is used to check whether a string is null or empty
+   * @param string
+   * @return
+   */
+  public static boolean isNullOrEmptyString(String string) {
+    if (null == string || "".equals(string))
+      return true;
+    else
+      return false;
+  } //end method
+
+  /**
+   * Method for adding the days in the date
+   * @param sourceformat: source format of the data
+   * @param date: the source date
+   * @param days: days to be added
+   * @param fianlFormat: final format of the date
+   * @return: the finally added date in the require format
+   */
+  public static String addDaysInDate(String sourceformat, String date,
+                                     String days, String fianlFormat) {
+    String newDate = date;
+    SimpleDateFormat sdf = null;
+    GregorianCalendar calcDate = null;
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      "Original Date -->" + date +
+                                      "<-- Days -->" + days);
+      sdf = new SimpleDateFormat(sourceformat);
+      calcDate = new GregorianCalendar();
+      calcDate.setTime(sdf.parse(newDate));
+      calcDate.add(GregorianCalendar.DAY_OF_YEAR, Integer.parseInt(days));
+      sdf = new SimpleDateFormat(fianlFormat);
+      newDate = sdf.format(calcDate.getTime());
+      baseLogger.log(I2cLogger.FINEST,
+                                      "Final Date -->" + newDate);
+    }
+    catch (Exception e) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "Exception in adding Days method--->" + e);
+    } //end catch
+    return newDate;
+  } //end method
+
+  /**
+   * Method for calculating the Time Difference between the two dates
+   * @param currentDate: the current/smaller date value
+   * @param nextDate: the future/next data value
+   * @param format: the formats of the date
+   * @return: the Time Difference in millisecond
+   */
+  public static long calculateTimeDifference(String currentDate,
+                                             String nextDate, String format) {
+    long timeDiff = -1;
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      "Calculating Time Difference Method Current Time -->" +
+                                      currentDate +
+                                      "<--- Next --->" + nextDate);
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      java.util.Date currentDateObj = sdf.parse(currentDate);
+      java.util.Date nextDateObj = sdf.parse(nextDate);
+      timeDiff = nextDateObj.getTime() - currentDateObj.getTime();
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      " Exception in Calculating Time Difference -->" +
+                                      ex);
+    } //end catch
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Final Time Difference -->" + timeDiff);
+    return timeDiff;
+  } //end method
+
+  /**
+   * Method for calculating the Time Difference between the two dates
+   * @param currentDate: the current/smaller date value
+   * @param nextDate: the future/next data value
+   * @param format: the formats of the date
+   * @return: the Time Difference in millisecond
+   */
+  public static long calculateCurrentMilliTime(String currentDate,
+                                               String format) {
+    long timeDiff = -1;
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      "Calculating Current Time Milli Method Current Time -->" +
+                                      currentDate + "<--- format --->" + format);
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      java.util.Date currentDateObj = sdf.parse(currentDate);
+      timeDiff = currentDateObj.getTime();
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      " Exception in Calculating Current Time Milli -->" +
+                                      ex);
+    } //end catch
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Final Calculating Current Time Milli -->" +
+                                    timeDiff);
+    return timeDiff;
+  } //end method
+
+  /**
+   * @Author: Hassan Arif
+   * @Date: 23/02/2004
+   * Date Validator (CCYYMMDD)
+   * @param strDateFormat
+   * @return boolean
+   */
+  public static boolean dateValidator(String strFormat, String strDate) {
+    try {
+      if (strDate == null) {
+        return false;
+      }
+      java.util.Date d;
+      baseLogger.log(I2cLogger.FINEST,
+                                      "strFormat: " + strFormat + " strDate: " +
+                                      strDate);
+
+      SimpleDateFormat sdf = new SimpleDateFormat(strFormat);
+      sdf.setLenient(false);
+      d = sdf.parse(strDate);
+      return true;
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "Invalid Date Format Exception");
+      return false;
+    }
+  }
+
+  /**
+   * @Author: Hassan Arif
+   * @Date: 23/02/2004
+   * Validate numeric value
+   * @param String strNumber
+   * @return boolean
+   */
+  public static boolean isNumeric(String strNumber) {
+    try {
+      Integer.parseInt(strNumber);
+      return true;
+    }
+    catch (NumberFormatException ex) {
+      baseLogger.log(I2cLogger.WARNING,
+                                      "Number Format Exception");
+      return false;
+    }
+  }
+
+  /**
+   * used to get the single option for a collection.
+   * @author abakar
+   * @param value
+   * @param text
+   * @return
+   */
+  public static String[] getCollectionOption(String value, String text) {
+    String[] data = new String[2];
+    data[0] = value;
+    data[1] = text;
+    return data;
+  }
+
+  /**
+   * used to check if a string is empty
+   * @author abakar
+   * @param string
+   * @return
+   */
+  public static boolean isEmptyString(String string) {
+    if ("".equals(string)) {
+      return true;
+    }
+
+    return false;
+  } //end method
+
+  /**
+   * used to check if an object is null
+   * @author abakar
+   * @param object
+   * @return
+   */
+  public static boolean isNull(Object object) {
+    if (null == object) {
+      return true;
+    }
+
+    return false;
+  } //end method
+
+  /**
+   * Method for converting the delimeted String into Array
+   * @param value: the string containing the delimeter
+   * @param delimeter: the delimeter value
+   * @return: the String array
+   */
+  public static String[] convertStringArray(String value, String delimeter) {
+    String[] valueList = null;
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Convert String Array Method Value is -->" +
+                                      value +
+                                      "<--- Delimeter -->" + delimeter);
+      Vector valueVec = new Vector();
+      //Tokenizing the string to create list
+      StringTokenizer stk = new StringTokenizer(value, delimeter);
+      while (stk.hasMoreTokens())
+        valueVec.addElement(stk.nextToken());
+
+        //Add the values in Array
+      if (valueVec.size() > 0) {
+        valueList = new String[valueVec.size()];
+        valueVec.toArray(valueList);
+      } //end if
+
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Exception in convertStringArray method -->" +
+                                      ex);
+    } //end catch
+    return valueList;
+  } //end method
+
+  public static String getStackTrace(Throwable th) {
+    final Writer trace = new StringWriter();
+    final PrintWriter pw = new PrintWriter(trace);
+    th.printStackTrace(pw);
+    return trace.toString();
+  }
+
+  public static String getDateTimeInDifferentTimeZone(String timeZone,
+      String format, String locale, String language) {
+    String dateTime = null;
+    Calendar cd = new GregorianCalendar(TimeZone.getTimeZone(timeZone));
+    java.util.Date currentDateTime = cd.getTime();
+    Locale userlocale = new Locale(language, locale);
+    DateFormat uformatter = DateFormat.getDateTimeInstance(DateFormat.FULL,
+        DateFormat.FULL, userlocale);
+    uformatter.setCalendar(cd);
+
+    SimpleDateFormat sdf = new SimpleDateFormat(format);
+    dateTime = uformatter.format(currentDateTime);
+    return dateTime;
+  }
+
+//  public static Vector getMailInfo(String mailID, String instanceName) {
+//    Vector info = new Vector();
+//    Connection dbConn = null;
+//    Statement stmt = null;
+//    ResultSet rs = null;
+//    StringBuffer query = new StringBuffer();
+//
+//    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//                                    " CommonUtilities --- getMailInfo--- Argument List --- Mail ID--->" +
+//                                    mailID + " Instance Name-->" + instanceName);
+//    try {
+//      query.append("select * from emails where email_id = '");
+//      query.append(mailID);
+//      query.append("'");
+//      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//                                      " CommonUtilities --- getMailInfo ---  Query for getting Email Info --->" +
+//                                      query.toString());
+//      dbConn = DatabaseConnectionUtil.getConnection("CommonUtilities", instanceName);
+//      stmt = dbConn.createStatement();
+//      rs = stmt.executeQuery(query.toString());
+//
+//      if (rs.next()) {
+//        if (rs.getString("email_add_from") != null) {
+//          info.add(rs.getString("email_add_from").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_address") != null) {
+//          info.add(rs.getString("email_address").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_add_cc") != null) {
+//          info.add(rs.getString("email_add_cc").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_subject") != null) {
+//          info.add(rs.getString("email_subject").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd1") != null) {
+//          info.add(rs.getString("email_msg_hd1").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd2") != null) {
+//          info.add(rs.getString("email_msg_hd2").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd3") != null) {
+//          info.add(rs.getString("email_msg_hd3").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//      } // end main if
+//      // Closing rs and stmt
+//      rs.close();
+//      stmt.close();
+//    } // end try
+//    catch (Exception ex) {
+//      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+//                                      " CommonUtilities --- getMailInfo ---  Exception in getting mail info from Database--->" +
+//                                      ex);
+//    }
+//    finally {
+//      if (dbConn != null) {
+//        try {
+//          DatabaseConnectionUtil.returnConnection(dbConn, "CommonUtilities");
+//        }
+//        catch (Exception ex) {
+//
+//        }
+//      }
+//    }
+//    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//                                    " CommonUtilities --- getMailInfo ---  Email Info Result Size --->" +
+//                                    info.size());
+//    return info;
+//  }
+//
+//  public static EmailContantBean getMailInfo(Connection dbConn, String mailID) {
+//    EmailContantBean mailObj = null;
+//    PreparedStatement pstmt = null;
+//    ResultSet rs = null;
+//    StringBuffer query = new StringBuffer();
+//    try {
+//      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//                                " CommonUtilities --- getMailInfo--- Argument List --- Mail ID--->" +
+//                                mailID);
+//      mailObj = new EmailContantBean();
+//      query.append("select * from emails where email_id = ? ");
+//      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//                                      " CommonUtilities --- getMailInfo ---  Query for getting Email Info --->" +
+//                                      query);
+//      pstmt = dbConn.prepareStatement(query.toString());
+//      pstmt.setString(1,mailID);
+//      rs = pstmt.executeQuery();
+//
+//      if (rs.next()) {
+//
+//        String emailFrom = rs.getString("email_add_from");
+//        if (emailFrom != null && emailFrom.trim().length() > 0) {
+//          mailObj.setEmailFrom(emailFrom);
+//        }
+//
+//        String emailTo = rs.getString("email_address");
+//        if (emailTo != null && emailTo.trim().length() > 0) {
+//          mailObj.setEmailTo(emailTo);
+//        }
+//
+//        String emailCC = rs.getString("email_add_cc");
+//        if (emailCC != null && emailCC.trim().length() > 0) {
+//          mailObj.setEmailCC(emailCC);
+//        }
+//
+//        String emailSubject = rs.getString("email_subject");
+//        if (emailSubject != null && emailSubject.trim().length() > 0) {
+//          mailObj.setEmailSubject(emailSubject);
+//        }
+//
+//        String emailHdr = rs.getString("email_msg_hd1");
+//        if (emailHdr != null && emailHdr.trim().length() > 0) {
+//          mailObj.setEmailHeader(emailHdr);
+//        }
+//
+//        String emailBdy = rs.getString("email_msg_hd2");
+//        if (emailBdy != null && emailBdy.trim().length() > 0) {
+//          mailObj.setEmailBody(emailBdy);
+//        }
+//
+//        String emailFtr = rs.getString("email_msg_hd3");
+//        if (emailFtr != null && emailFtr.trim().length() > 0) {
+//          mailObj.setEmailFooter(emailFtr);
+//        }
+//      }
+//    }catch (Exception ex) {
+//      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+//                                      " CommonUtilities --- getMailInfo ---  Exception in getting mail info from Database--->" +
+//                                      ex);
+//    }finally {
+//      try {
+//        if (rs != null) {
+//          rs.close();
+//        }
+//        if (pstmt != null) {
+//          pstmt.close();
+//        }
+//      }
+//      catch (Exception ex) {
+//      }
+//    }
+//    return mailObj;
+//  }
+//
+//  public static Vector getMailInfo(String mailID, Connection dbConn) {
+//    Vector info = new Vector();
+//    Statement stmt = null;
+//    ResultSet rs = null;
+//    StringBuffer query = new StringBuffer();
+//
+//    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//        " CommonUtilities --- getMailInfo--- Argument List --- Mail ID--->" +
+//                                    mailID);
+//    try {
+//      query.append("select * from emails where email_id = '");
+//      query.append(mailID);
+//      query.append("'");
+//      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//          " CommonUtilities --- getMailInfo ---  Query for getting Email Info --->" +
+//                                      query.toString());
+//      stmt = dbConn.createStatement();
+//      rs = stmt.executeQuery(query.toString());
+//
+//      if (rs.next()) {
+//        if (rs.getString("email_add_from") != null) {
+//          info.add(rs.getString("email_add_from").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_address") != null) {
+//          info.add(rs.getString("email_address").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_add_cc") != null) {
+//          info.add(rs.getString("email_add_cc").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_subject") != null) {
+//          info.add(rs.getString("email_subject").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd1") != null) {
+//          info.add(rs.getString("email_msg_hd1").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd2") != null) {
+//          info.add(rs.getString("email_msg_hd2").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//        if (rs.getString("email_msg_hd3") != null) {
+//          info.add(rs.getString("email_msg_hd3").trim());
+//        }
+//        else {
+//          info.add("");
+//        }
+//      } // end main if
+//      // Closing rs and stmt
+//      rs.close();
+//      stmt.close();
+//    } // end try
+//    catch (Exception ex) {
+//      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+//                                      " CommonUtilities --- getMailInfo ---  Exception in getting mail info from Database--->" + ex);
+//    }
+//    finally {
+//      try {
+//        if (rs != null) {
+//          rs.close();
+//        }
+//        if (stmt != null) {
+//          stmt.close();
+//        }
+//      }
+//      catch (SQLException ex1) {
+//      }
+//    }
+//    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+//        " CommonUtilities --- getMailInfo ---  Email Info Result Size --->" +
+//                                    info.size());
+//    return info;
+//  }
+
+  public static String emailTokenizer(String value, String delimeter) {
+
+    StringBuffer message = new StringBuffer();
+    try {
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Convert String Array Method Value is -->" +
+                                      value +
+                                      "<--- Delimeter -->" + delimeter);
+      //Tokenizing the string to create list
+      StringTokenizer stk = new StringTokenizer(value, delimeter, true);
+      String token = null;
+      while (stk.hasMoreTokens()) {
+        token = stk.nextToken();
+        baseLogger.log(I2cLogger.FINEST,
+                                        " Convert String Array Method Value is --- Token--->" +
+                                        token);
+        if (!token.equalsIgnoreCase(delimeter)) {
+          message.append(token);
+        }
+        else {
+          message.append(System.getProperty("line.separator"));
+        }
+      }
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.FINEST,
+                                      " Exception in convertStringArray method -->" +
+                                      ex);
+    } //end catch
+    baseLogger.log(I2cLogger.FINEST,
+                                    " Message Built --- Token--->" +
+                                    message.toString());
+    return message.toString();
+  } //end method
+
+  public static java.util.Date getMailSentDate() {
+    java.util.Date sentDate = null;
+    SimpleDateFormat sdf = new SimpleDateFormat(BaseConstants.ACH_DATE_TIME_FORMAT);
+    String date = null;
+    try {
+      date = CommonUtilities.getCurrentFormatDateTime(BaseConstants.
+          ACH_DATE_TIME_FORMAT);
+      if (date != null && date.trim().length() > 0) {
+        sentDate = sdf.parse(date);
+        baseLogger.log(I2cLogger.FINEST,
+            " Got Sent Mail Date--> " +
+            sentDate);
+      }
+    }
+    catch (Exception ex) {
+      baseLogger.log(I2cLogger.WARNING,
+          " Exception in getting Sent Mail Date--> " +
+          ex);
+    }
+    return sentDate;
+  }
+
+  public static void createFolder(String fullPath) {
+    File newPath = new File(fullPath);
+    if (!newPath.exists())
+      newPath.mkdir();
+  }
+
+  public static boolean moveFileToThisFolder(String currentFilePath, String newFolderPath,
+                                             String newFileName) throws
+      Exception {
+    baseLogger.log(I2cLogger.FINEST,
+                                    "****************Start-->moveFileToThisFolder****************");
+    baseLogger.log(I2cLogger.CONFIG,
+                                    "moveFileToThisFolder------->File Path : " +
+                                    currentFilePath);
+    baseLogger.log(I2cLogger.CONFIG,
+                                    "moveFileToThisFolder----------->Folder Path to move file : " +
+                                    newFolderPath);
+    baseLogger.log(I2cLogger.CONFIG,
+                                    "moveFileToThisFolder---------->New File Name -- > " +
+                                    newFileName);
+
+    File origFile = new File(currentFilePath);
+    File dir = new File(newFolderPath);
+
+    if (!dir.exists()) {
+      dir.mkdirs();
+    }
+
+    boolean result = false;
+
+    result = origFile.renameTo(new File(dir, newFileName));
+
+    baseLogger.log(I2cLogger.CONFIG,
+                                    "****************End-->moveFileToThisFolder****************");
+    return result;
+
+  }
+
+  /**
+   * Method return JulienDate in yyyyddd format d=day of the year
+   * @return String
+   */
+  public static String getJulienDate(){
+    Calendar cal=Calendar.getInstance();
+       int jDate = cal.get(Calendar.DAY_OF_YEAR);
+       String sJDate = null;
+       if (jDate < 10){
+           sJDate = "00" + jDate;
+       }else if (jDate < 100){
+           sJDate = "0" + jDate;
+       } else {
+           sJDate = Integer.toString(jDate);
+       }
+       SimpleDateFormat simpleDF=new SimpleDateFormat("yyyy");
+       String formattedDate=simpleDF.format(cal.getTime());
+       return formattedDate+sJDate;
+  }
+
+
+  private static String MACHINE_IP = null;
+
+  /**
+   * get IP address of the machine on which the Scheduler is running
+   * @return String
+   */
+  public static synchronized String getMachineIP() {
+    return MACHINE_IP;
+  }
+
+  /**
+   * set the IP address of the machine on which the Scheduler is running
+   */
+  public static synchronized void setMachineIP() {
+    try {
+      java.net.InetAddress machine_ip = java.net.InetAddress.getLocalHost();
+      MACHINE_IP = machine_ip.getHostAddress();
+    }
+    catch (java.net.UnknownHostException uhe) {
+      System.err.println("Exception during getting Machine IP address in Contants.setMachineIP");
+      uhe.printStackTrace();
+    }
+  }
+
+
+
+
+  /**
+   * return the loglevel
+   * @param logLevel int
+   * @return Level
+   */
+  public static Level getLogLevel(int logLevel){
+      switch(logLevel){
+        case 1: return Level.FINEST;
+        case 2: return Level.FINER;
+        case 3: return Level.FINE;
+        case 4: return Level.CONFIG;
+        case 5: return Level.INFO;
+        case 6: return Level.WARNING;
+        case 7: return Level.SEVERE;
+        default: return Level.ALL;
+      }
+  }
+
+} //end common utility class {

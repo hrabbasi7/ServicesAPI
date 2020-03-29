@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.rational.xtools.umlvisualizer.emfnotation:Pack xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.rational.xtools.umlvisualizer.emfnotation="http:///com/rational/xtools/umlvisualizer/emfnotation.ecore" Id="897eb851-00fb-f14c-1af2-c0a8004aaa77" version="8">
+  <Diagram DiagramId="897eb852-00fb-ee12-1f25-c0a8004aaa77">
+    <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:PositionalGeneralView" LineColor="4009615" FillColor="13565951" Font="Tahoma|10|0|" Visible="true" FactoryHint="" ShapeStereotypeStyle="2" Id="897f53b2-00fb-eade-7ccd-c0a8004aaa77" PositionX="625" PositionY="625" ExtentX="3975" ExtentY="1850" Autosize="false" VisibilityStyle="2" ShowCompartmentTitle="false" CompartmentStereotypeStyle="2" ShowParentName="false">
+      <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.MainSortingControl})" Name="MainSortingControl" Kind="29"/>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:NameCompartmentView" Visible="true" FactoryHint="Stereotype" ShapeStereotypeStyle="2" Id="897f53c1-00fb-e1ac-4ea3-c0a8004aaa77">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.MainSortingControl})" Name="MainSortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:NameCompartmentView" Visible="true" FactoryHint="Name" ShapeStereotypeStyle="2" Id="897f53c2-00fb-fe73-5810-c0a8004aaa77">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.MainSortingControl})" Name="MainSortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:ListCompartmentView" Visible="true" FactoryHint="Attribute" ShapeStereotypeStyle="2" Id="897f53c3-00fb-ff86-5fca-c0a8004aaa77" Ratio="-1.0" Collapsed="true">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.MainSortingControl})" Name="MainSortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:ListCompartmentView" Visible="true" FactoryHint="Operation" ShapeStereotypeStyle="2" Id="897f53c4-00fb-e4e6-69b5-c0a8004aaa77" Ratio="-1.0" Collapsed="true">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.MainSortingControl})" Name="MainSortingControl" Kind="29"/>
+      </children>
+    </children>
+    <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:PositionalGeneralView" LineColor="4009615" FillColor="13565951" Font="Tahoma|10|0|" Visible="true" FactoryHint="" ShapeStereotypeStyle="2" Id="89829e3d-00fb-e3e1-1b33-c0a8004aaa77" PositionX="5625" PositionY="625" ExtentX="150" ExtentY="150" Autosize="true" VisibilityStyle="2" ShowCompartmentTitle="false" CompartmentStereotypeStyle="2" ShowParentName="false">
+      <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.SortingControl})" Name="SortingControl" Kind="29"/>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:NameCompartmentView" Visible="true" FactoryHint="Stereotype" ShapeStereotypeStyle="2" Id="89829e3e-00fb-e0a7-28fe-c0a8004aaa77">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.SortingControl})" Name="SortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:NameCompartmentView" Visible="true" FactoryHint="Name" ShapeStereotypeStyle="2" Id="89829e3f-00fb-e1ba-323a-c0a8004aaa77">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.SortingControl})" Name="SortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:ListCompartmentView" Visible="true" FactoryHint="Attribute" ShapeStereotypeStyle="2" Id="89829e40-00fb-e97d-3a02-c0a8004aaa77" Ratio="-1.0" Collapsed="true">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.SortingControl})" Name="SortingControl" Kind="29"/>
+      </children>
+      <children xsi:type="com.rational.xtools.umlvisualizer.emfnotation:ListCompartmentView" Visible="true" FactoryHint="Operation" ShapeStereotypeStyle="2" Id="89829e41-00fb-ea90-43d8-c0a8004aaa77" Ratio="-1.0" Collapsed="true">
+        <SemanticReference Id="emfsemantic:(~jclass{!pid%components}{%com.i2c.component.framework.ui.SortingControl})" Name="SortingControl" Kind="29"/>
+      </children>
+    </children>
+  </Diagram>
+</com.rational.xtools.umlvisualizer.emfnotation:Pack>

@@ -1,0 +1,112 @@
+package com.i2c.service.billpaymentschedularservice.FTPService;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class FTPInfoVO {
+  private String ftpAddress;
+  private String ftpPort;
+  private String ftpUserId;
+  private String ftpPassword;
+  private String ftpLocalPath;
+  private String ftpRemotePath;
+  private String isPgp;
+  private String isAllowed;
+  private String filePreFix;
+  private String filePostFix;
+  public FTPInfoVO() {
+  }
+
+  public void setFtpAddress(String ftpAddress) {
+    this.ftpAddress = ftpAddress;
+  }
+
+  public void setFtpPort(String ftpPort) {
+    this.ftpPort = ftpPort;
+  }
+
+  public void setFtpUserId(String ftpUserId) {
+    this.ftpUserId = ftpUserId;
+  }
+
+  public void setFtpPassword(String ftpPassword) {
+    this.ftpPassword = ftpPassword;
+  }
+
+  public void setFtpLocalPath(String ftpLocalPath) {
+    this.ftpLocalPath = ftpLocalPath;
+  }
+
+  public void setFtpRemotePath(String ftpRemotePath) {
+    this.ftpRemotePath = ftpRemotePath;
+  }
+
+  public void setIsPgp(String isPgp) {
+    this.isPgp = isPgp;
+  }
+
+  public void setIsAllowed(String isAllowed) {
+    this.isAllowed = isAllowed;
+  }
+
+  public void setFilePreFix(String filePreFix) {
+
+    this.filePreFix = filePreFix;
+  }
+
+  public void setFilePostFix(String filePostFix) {
+
+    this.filePostFix = filePostFix;
+  }
+
+  public String getFtpAddress() {
+    return ftpAddress;
+  }
+
+  public String getFtpPort() {
+    return ftpPort;
+  }
+
+  public String getFtpUserId() {
+    return ftpUserId;
+  }
+
+  public String getFtpPassword() {
+    return ftpPassword;
+  }
+
+  public String getFtpLocalPath() {
+    return ftpLocalPath;
+  }
+
+  public String getFtpRemotePath() {
+    return ftpRemotePath;
+  }
+
+  public String getIsPgp() {
+    return isPgp;
+  }
+
+  public String getIsAllowed() {
+    return isAllowed;
+  }
+
+  public String getFilePreFix() {
+
+    return filePreFix;
+  }
+
+  public String getFilePostFix() {
+
+    return filePostFix;
+  }
+}

@@ -1,0 +1,10 @@
+********************************************* Card Balance Alert *************************************************
+Dear Customer,
+
+	This is to inform you that the balance of your card number $cardNumber is currently $operator the defined card balance limit($limit).
+	
+ 	Current Balance: 	$cardBalance
+	Card Balance Limit: 	$limit                                                                                        
+
+*************************************************************************************************************                 
+$footer   

@@ -1,0 +1,33 @@
+package com.i2c.schedulerframework.handler;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: i2cinc</p>
+ *
+ * @author hrabbasi
+ * @version 1.0
+ */
+public abstract class BaseHandler implements Runnable {
+
+  public final void run() {
+    // TODO Auto-generated method stub
+    beforeBusinessLogic();
+    mainBusinessLogic();
+    afterBusinessLogic();
+  }
+  public abstract void mainBusinessLogic();
+
+  public void beforeBusinessLogic(){
+    System.out.println("[BaseHandler].[beforeBusinessLogic] >>>>>>>>>>>>> Before Main Business Logic <<<<<<<<<<<<<");
+
+  }
+  public void afterBusinessLogic(){
+    System.out.println("[BaseHandler].[beforeBusinessLogic] >>>>>>>>>>>>> After Main Business Logic <<<<<<<<<<<<<");
+  }
+
+}

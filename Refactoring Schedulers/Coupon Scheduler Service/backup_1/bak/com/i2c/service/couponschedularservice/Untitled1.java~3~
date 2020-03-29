@@ -1,0 +1,35 @@
+package com.i2c.service.couponschedularservice;
+
+import java.util.logging.Level;
+
+public class Untitled1 {
+  public static int LogLevel = -1;
+  public static void main(String[] args) {
+    int value = 1;
+
+    getLogLevel(value);
+
+    System.out.println("All" + Level.ALL.intValue());
+    System.out.println("config" + Level.CONFIG.intValue());
+    System.out.println("fine" + Level.FINE.intValue());
+    System.out.println("finer" + Level.FINER.intValue());
+    System.out.println("finest" +Level.FINEST.intValue());
+    System.out.println("info" + Level.INFO.intValue());
+    System.out.println("off "+ Level.OFF.intValue());
+    System.out.println("severe" +Level.SEVERE.intValue());
+    System.out.println("warning"+ Level.WARNING.intValue());
+  }
+
+  public static Level getLogLevel(int logLevel){
+    switch(logLevel){
+      case 1: return Level.FINEST;
+      case 2: return Level.FINER;
+      case 3: return Level.FINE;
+      case 4: return Level.CONFIG;
+      case 5: return Level.INFO;
+      case 6: return Level.WARNING;
+      case 7: return Level.SEVERE;
+      default: return Level.ALL;
+    }
+  }
+}

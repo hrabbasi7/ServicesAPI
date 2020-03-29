@@ -1,0 +1,14 @@
+[PropertyInfo]
+connString,String,false,false,connString,connString,true,<default>
+driverName,String,false,false,driverName,driverName,true,<default>
+extBatchList,java.util.ArrayList,false,false,extBatchList,extBatchList,true,<default>
+interfaceId,String,false,false,interfaceId,interfaceId,true,<default>
+interfaceName,String,false,false,interfaceName,interfaceName,true,<default>
+isActive,String,false,false,isActive,isActive,true,<default>
+password,String,false,false,password,password,true,<default>
+userId,String,false,false,userId,userId,true,<default>
+[IconNames]
+
+
+
+

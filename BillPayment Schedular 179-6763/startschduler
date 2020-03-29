@@ -1,0 +1,4 @@
+. /jenv
+. /setmcpenv
+CLASSPATH=$CLASSPATH:/y/BillpaymentSchdularService/service/BillPaymentSchedularService.jar
+java com.i2c.service.billpaymentschedularservice.ServiceMain 1>BillpaymentSchedularService.log 2>&1 &

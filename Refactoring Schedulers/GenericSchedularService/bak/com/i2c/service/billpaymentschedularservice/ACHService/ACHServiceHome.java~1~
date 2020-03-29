@@ -1,0 +1,396 @@
+package com.i2c.service.schedularservice.ACHService;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.i2c.service.util.*;
+import com.i2c.service.base.*;
+import com.i2c.service.excep.*;
+import java.sql.*;
+import com.i2c.ach.jobs.*;
+import com.i2c.service.schedularservice.AdminMailService;
+
+import com.i2c.ach.framework.FTPSConfigObj;
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHServiceHome extends BaseHome {
+  String instanceName = null;
+  private Connection dbConn = null;
+
+  /**
+   * Main Constructor
+   * @param instance
+   */
+  public ACHServiceHome(String _instance, Connection dbConn) {
+//    super(dbConn);
+    this.instanceName = _instance;
+    this.dbConn = dbConn;
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        "ACHServiceHome Setting the Instance Name -->" + this.instanceName);
+  } //end constructor
+
+
+  /**
+   * Method for processing the ACH Returns
+   * @param dbConn: connection parameters
+   */
+  public void callACHReturns(ACHInfoObj infoObj)
+      throws ProcessValuesExcep{
+    DbConnectionInfoObj connObj = null;
+
+    FTPSConfigObj config = null;
+
+    //Closed Fast Cash Connection Settings (Agohar)
+    //Connection fcConnObj = null;
+    Vector statusArray = new Vector();
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calling ACH retrun method for processing");
+    try {
+      //Getting the FastCash Connection Information object
+      //Made below line Comment by AGohar
+      //fcConnObj = DatabaseHandler.getFCConnection("ACHServiceHome",instanceName);
+
+      connObj = (DbConnectionInfoObj)LoadProperties.instanceConnectionsTable.get(instanceName);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance  -->"+instanceName+"<--- Instance Information Object -->"+connObj);
+      //Checking for the Mandatory Parameters
+      if (connObj == null )
+        throw new ProcessValuesExcep(-1,"Unable to ge the Instance Specific Settings ");
+
+       //Calling API for processing the scheduled ACH
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance Information GOT -- Istance Name -->"+connObj.getConnectionName()+"<--- ACH Output Path -->"+connObj.getAchOutputPath()+"<--- Service User ID -->"+connObj.getServiceUserID());
+        File achFile = new File(connObj.getAchOutputPath());
+        //Create the ACH Generation folder if not exist
+        if (!achFile.exists())
+          achFile.mkdir();
+        //Checking if the ACH Generation folder exist
+        if (!achFile.exists())
+          throw new ProcessValuesExcep(-1,"ACH Generation Folder not exist ");
+
+        String incomingFolderPath = connObj.getAchOutputPath() + File.separator + Constants.INCOMING_FOLDER;
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Incoming Folder PAth -->"+incomingFolderPath);
+        //Creating the ACH incoming folder
+        achFile = new File(incomingFolderPath);
+        //Create the ACH Generation folder if not exist
+        if (!achFile.exists())
+          achFile.mkdir();
+        //Checking if the ACH Generation folder exist
+        if (!achFile.exists())
+          throw new ProcessValuesExcep(-1,"ACH Incoming Folder not exist ");
+
+        //Creating the Log File Path
+        String achLogFilePath = Constants.LOG_FILE_PATH + File.separator + instanceName + File.separator + Constants.ACH_DIR + File.separator;
+        achFile = new File(achLogFilePath);
+        //Create the ACH Generation folder if not exist
+        if (!achFile.exists())
+          achFile.mkdir();
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," ACH Log File Path -->"+achLogFilePath);
+//--------------------------------------Downloading Return Files---------------//
+        try
+        {
+          config = mapFTPSObject(infoObj);
+          ReturnProcessor.downloadReturnFiles(dbConn, config, incomingFolderPath,achLogFilePath);
+        }
+        catch (Exception ex1)
+        {
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Downloading ACH Returns Files -->"+ex1);
+          ACHStatusMailer.updateFailedACHInfo(ex1.getMessage(),CommonUtilities.getStackTrace(ex1),instanceName,true, Constants.ACH_ERROR,dbConn);
+        }
+
+     //Calling the API for processing incoming folder
+     //changed the ACH API Call, removed Fast Cash Connection parameter by Agohar
+     // statusArray = ReturnProcessor.processReturns(dbConn,incomingFolderPath,achLogFilePath,connObj.getServiceUserID(),fcConnObj);
+     statusArray = ReturnProcessor.processReturns(dbConn,incomingFolderPath,achLogFilePath,connObj.getServiceUserID());
+
+      if (statusArray != null && statusArray.size() > 0)
+      {
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Total Files -->"+statusArray.size());
+        String message = statusArray.get(0).toString();
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Message -->"+message);
+        if(message != null && message.trim().length() > 0)
+        {
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),"<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email ID--->" + Constants.ACH_RETURN_SUCCESS + " Instance Name--->"+instanceName);
+          Vector info = CommonUtilities.getMailInfo(Constants.ACH_RETURN_SUCCESS, dbConn);
+
+          String email_from = info.elementAt(0).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email From--->" + email_from);
+          String email_to = info.elementAt(1).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email To--->" + email_to);
+          String email_cc = info.elementAt(2).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email CC--->" + email_cc);
+          String email_subject = info.elementAt(3).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Subject--->" + email_subject);
+          String email_hdr = info.elementAt(4).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Hdr--->" + email_hdr);
+          String email_msg = info.elementAt(5).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Msg--->" + email_msg);
+          String email_ftr = info.elementAt(6).toString();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                              "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Ftr--->" + email_ftr);
+
+
+          StringBuffer mailMessage= new StringBuffer();
+          mailMessage.append("Instance Name: ");
+          mailMessage.append(instanceName);
+          mailMessage.append("\n\nMachine IP: ");
+          mailMessage.append(Constants.getMachineIP());
+          mailMessage.append("\n\nDear Administrator,");
+          mailMessage.append("\n\n" + message);
+          AdminMailService adminEmail = new AdminMailService(mailMessage.toString(), email_subject, email_to, email_from);
+          adminEmail.start();
+        }
+      }
+    }
+    catch(Exception ex)
+    {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Call ACH Returns Method -->"+ex);
+      throw new ProcessValuesExcep(-1,"Exception in processing ACH returns -->"+ex);
+    }
+  }//end method
+
+
+
+  /**
+   * Method for getting the scheduled ACH
+   * @return: remaining time for next schdule time
+   */
+  public Vector checkSchduleInformation()
+      throws LoadInfoExcep {
+    StringBuffer query = new StringBuffer();
+    ACHInfoObj infoObj = null;
+    Vector achInfoVec = new Vector();
+    long schduleTime = -1;
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Fetch ACH Schdule Information  instanceName -->"+instanceName);
+    try {
+      query.append(" select odfi_routing_no,sheduled_date||' '|| cutover_time cutover,ach_odfi_desc,sftp_address,sftp_port,sftp_user,sftp_user_passwd,sftp_path,server_cert_file,to_email_address,sftp_return_path,sftp_type ");
+      query.append(" from ach_odfis ");
+      query.append(" where sheduled_date < '"+CommonUtilities.getCurrentFormatDate(Constants.DATE_FORMAT)+"'");
+      query.append(" or (sheduled_date = '"+CommonUtilities.getCurrentFormatDate(Constants.DATE_FORMAT)+"' and cutover_time <=  '"+CommonUtilities.getCurrentFormatTime(Constants.EOD_TIME_FORMAT_MIN)+"')" );
+      query.append(" order by cutover ");
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Query for fecthing Scheduled ACH Request -->"+query);
+      //Getting the time list
+      Vector schduleList = this.getACHODFIValues(query.toString(),dbConn);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Scheduled ACH Service Time Vector Size--->"+schduleList.size());
+      for (int i =0 ; i < schduleList.size(); ++i)
+      {
+        infoObj = new ACHInfoObj();
+        //Getting the Next ACH Scheduled Time
+        //LabelValueBean odfiObj = (LabelValueBean)schduleList.elementAt(i);
+        //Saving the Information
+        infoObj = (ACHInfoObj) schduleList.elementAt(i);
+        //infoObj.setScheduledDateTime(odfiObj.getValue().trim());
+        //infoObj.setScheduledODFI(odfiObj.getLabel().trim());
+        infoObj.setCurrentDateTime(CommonUtilities.getCurrentFormatDateTime(Constants.EOD_DATE_TIME_FORMAT));
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Scheduled ACH Service Time is --->"+infoObj.getScheduledDateTime()+"<----- ODFI ---->"+infoObj.getScheduledODFI());
+        //Calcilating the Time difference
+        schduleTime = CommonUtilities.calculateTimeDifference(infoObj.getCurrentDateTime(),infoObj.getScheduledDateTime(),Constants.EOD_DATE_TIME_FORMAT);
+        //Setting the Time Difference
+        infoObj.setTimeDifference(schduleTime);
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Time Difference Calculated ->"+infoObj.getTimeDifference());
+        achInfoVec.addElement(infoObj);
+      }//end for
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Final Schduled Vector Size -->"+achInfoVec.size());
+    } catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Check Next ACH Schdule -->"+ex);
+      throw new LoadInfoExcep(-1, "Exception in Check ACH Schdule -->"+ex);
+    }
+    return achInfoVec;
+  }//end method
+
+  /**
+   * Method for getting the scheduled Time
+   * @return: remaining time for next schdule time
+   */
+  public ACHInfoObj fetchNextSchduleInformation()
+      throws LoadInfoExcep {
+    StringBuffer query = new StringBuffer();
+    ACHInfoObj infoObj = new ACHInfoObj();
+    Connection dbConn = null;
+    long schduleTime = -1;
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Fetch ACH Schdule Information  instanceName -->"+instanceName);
+    try {
+      dbConn = DatabaseHandler.getConnection("ACHServiceHome",instanceName);
+      query.append(" select sheduled_date||'  ' ||cutover_time cutover,odfi_routing_no ");
+      query.append(" from ach_odfis ");
+      query.append(" order by cutover ");
+      //Getting the time list
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Query for Fetching ACH Schdule Information -->"+query);
+      Vector schduleList = this.getKeyValuePairs(query.toString(),dbConn);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Scheduled ACH Service Time Vector Size--->"+schduleList.size());
+      if (schduleList != null && schduleList.size() > 0){
+        //Getting the Next ACH Scheduled Time
+        LabelValueBean odfiObj = (LabelValueBean)schduleList.elementAt(0);
+        //Saving the Information
+        infoObj.setScheduledDateTime(odfiObj.getValue().trim());
+        infoObj.setScheduledODFI(odfiObj.getLabel().trim());
+        infoObj.setCurrentDateTime(CommonUtilities.getCurrentFormatDateTime(Constants.EOD_DATE_TIME_FORMAT));
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Scheduled ACH Service Time is --->"+infoObj.getScheduledDateTime()+"<----- ODFI ---->"+infoObj.getScheduledODFI());
+        //Calcilating the Time difference
+        schduleTime = CommonUtilities.calculateTimeDifference(infoObj.getCurrentDateTime(),infoObj.getScheduledDateTime(),Constants.EOD_DATE_TIME_FORMAT);
+      }//end if
+      //Setting the Time Difference
+      infoObj.setTimeDifference(schduleTime);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Time Difference Calculated ->"+infoObj.getTimeDifference());
+    } catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Fetch Next ACH Schdule -->"+ex);
+      throw new LoadInfoExcep(-1, "Exception in Fetch Next ACH Schdule -->"+ex);
+    } finally {
+      try {
+        if (dbConn != null)
+          DatabaseHandler.returnConnection(dbConn,"ACHServiceHome");
+      } catch(Exception ex) {}
+    }//end finally
+    return infoObj;
+  }//end method
+
+  /**
+   * Method for updating the ACH Schdule Date Time for the Next Day
+   * @return: able to perform the operation
+   */
+  public boolean updateNextACHScheduleInfo(ACHInfoObj achInfo) {
+    boolean flag = true;
+    StringBuffer query = new StringBuffer();
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Update ACH Schedule Method Current Scheduled Time -->"+achInfo.getScheduledDateTime()+"< -- Current Date Time -->"+achInfo.getCurrentDateTime());
+    try {
+      String nextSchedule = CommonUtilities.calulateDateInfo(Constants.EOD_DATE_TIME_FORMAT,achInfo.getCurrentDateTime(),"1",Constants.DATE_FORMAT,GregorianCalendar.DAY_OF_MONTH);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Next Calculated Scheduled Date -->"+nextSchedule);
+      query.append(" update ach_odfis  set sheduled_date = '"+ nextSchedule +"'");
+      query.append(" where odfi_routing_no = '"+achInfo.getScheduledODFI()+"'");
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Query for Updating Next ACH Schedule Time -->"+query);
+      //Save the next Schedule Date
+      this.storeValues(query.toString(),dbConn);
+    } catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Update ACH Schedule  -->"+ex);
+      flag = false;
+    }
+    return flag;
+  }//end update report status
+
+  public Vector getACHODFIValues(String query,Connection dbConn) throws LoadKeyValuesExcep
+  {
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG)," Query for getting Values of Scheduled ACH ODFI ->\n" + query);
+        Vector records = new Vector();
+        ACHInfoObj record = null;
+        Statement smt = null;
+        ResultSet rs = null;
+        try {
+             smt = dbConn.createStatement();
+             rs = smt.executeQuery(query);
+
+             while (rs.next())
+             {
+                 record = new ACHInfoObj();
+
+                 if(rs.getString(1) != null)
+                 {
+                   record.setScheduledODFI(rs.getString(1).trim());
+                 }
+                 if(rs.getString(2) != null)
+                 {
+                   record.setScheduledDateTime(rs.getString(2).trim());
+                 }
+                 if(rs.getString(3) != null)
+                 {
+                   record.setAchODFIDesc(rs.getString(3).trim());
+                 }
+                 if(rs.getString(4) != null)
+                 {
+                   record.setFtpsAddress(rs.getString(4).trim());
+                 }
+                 if(rs.getString(5) != null)
+                 {
+                   record.setFtpsPort(rs.getString(5).trim());
+                 }
+                 if(rs.getString(6) != null)
+                 {
+                   record.setFtpsUser(rs.getString(6).trim());
+                 }
+                 if(rs.getString(7) != null)
+                 {
+                   record.setFtpsPassword(rs.getString(7).trim());
+                 }
+                 if(rs.getString(8) != null)
+                 {
+                   record.setFtpsPath(rs.getString(8).trim());
+                 }
+                 if(rs.getString(9) != null)
+                 {
+                   record.setServerCertFile(rs.getString(9).trim());
+                 }
+                 if(rs.getString(10) != null)
+                 {
+                   record.setToEmailAddress(rs.getString(10).trim());
+                 }
+                 if(rs.getString(11) != null)
+                 {
+                   record.setFtpsReturnPath(rs.getString(11).trim());
+                 }
+                 if(rs.getString(12) != null)
+                 {
+                   record.setFtpType(rs.getString(12).trim());
+                 }
+
+
+                 records.add(record);
+             }//end while
+        } catch(SQLException e){
+                CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," SQLException in Getting Values of Scheduled ACH ODFI ----> "+e);
+                throw new LoadKeyValuesExcep(e.getErrorCode(),e);
+        } catch(Exception e){
+                CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Getting Values of Scheduled ACH ODFI ----> "+e);
+            throw new LoadKeyValuesExcep(e);
+        } finally {
+                try {
+                        if (rs != null){
+                          rs.close();
+                          rs = null;
+                        }
+                        if (smt != null){
+                          smt.close();
+                          smt = null;
+                        }
+                } catch(Exception ex) {}
+        }//end finally
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINER),"<-- Vector Size for getting Values of Scheduled ACH ODFI -->"+records.size());
+        return records;
+  }
+
+  private FTPSConfigObj mapFTPSObject(ACHInfoObj info)
+  {
+    FTPSConfigObj configObj = new FTPSConfigObj();
+
+    configObj.setFtpsHost(info.getFtpsAddress());
+    configObj.setFtpsPath(info.getFtpsReturnPath());
+    configObj.setFtpsPort(Integer.parseInt(info.getFtpsPort()));
+    configObj.setOdfiRoutingNo(info.getScheduledODFI());
+    configObj.setPassword(info.getFtpsPassword());
+    configObj.setUserId(info.getFtpsUser());
+    configObj.setType(info.getFtpType());
+    if(info.getServerCertFile() != null && Constants.ACH_FTPS_CERT_FILE != null)
+    {
+      configObj.setServerCertFilePath(Constants.ACH_FTPS_CERT_FILE + info.getServerCertFile());
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINER),"<-- Certificate File Path ---> " + configObj.getServerCertFilePath());
+    }
+    else
+    {
+      configObj.setServerCertFilePath(null);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINER),"<-- Certificate File Path ---> NULL");
+    }
+
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINER),"<-- ACHServiceHome --- Method Name---> mapFTPSObject FTPSConfig Object Attributes ---> Host---> " + configObj.getFtpsHost()+ " Path--->" + configObj.getFtpsPath()+ " Port---> " + configObj.getFtpsPort()+ " Routing Number---> " + configObj.getOdfiRoutingNo()+ " Password---> " + configObj.getPassword()+ " Certificate File Path---> " + configObj.getServerCertFilePath()+ " User---> " + configObj.getUserId());
+
+    return configObj;
+  }
+
+}//end Report Service Home

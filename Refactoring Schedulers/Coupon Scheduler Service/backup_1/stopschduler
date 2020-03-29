@@ -1,0 +1,26 @@
+echo "Please wait while stopping the Coupons schdular services ..."
+SERVICE="service"
+#PrgName=SchedularService.jar
+PrgName=com.i2c.service.couponschedularservice.ServiceMain
+PETP=`ps -lef|grep $PrgName|grep -v grep|grep -v '\.java'|cut -c16-21`
+if [ -z "${PETP}" ]
+then
+	echo "$SERVICE services already not started!"
+	exit 1
+fi
+
+# To end Prg
+kill -15 $PETP
+
+sleep 2
+
+PETP=`ps -lef|grep $PrgName|grep -v grep|grep -v '\.java'|cut -c16-21`
+if [ -z "${PETP}" ]
+then
+	echo "$SERVICE services stoped."
+	exit 0
+else
+	echo "$SERVICE services could not be stoped."
+	exit 2
+fi
+

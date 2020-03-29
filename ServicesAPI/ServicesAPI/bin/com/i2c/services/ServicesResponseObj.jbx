@@ -1,0 +1,52 @@
+[PropertyInfo]
+AAC,String,false,false, , ,false, 
+accountNo,String,false,false, , ,false, 
+achAccountNo,String,false,false, , ,false, 
+achAccountStatus,String,false,false, , ,false, 
+achAccountStatusDesc,String,false,false, , ,false, 
+achType,String,false,false, , ,false, 
+addressStreet1,String,false,false, , ,false, 
+addressStreet2,String,false,false, , ,false, 
+bankAccountTitle,String,false,false, , ,false, 
+bankAccountType,String,false,false, , ,false, 
+bankAddress,String,false,false, , ,false, 
+bankName,String,false,false, , ,false, 
+bankRoutingNo,String,false,false, , ,false, 
+businessDate,String,false,false, , ,false, 
+cardAccounts,java.util.Vector,false,false, , ,false, 
+cardBalance,String,false,false, , ,false, 
+cardExpDate,String,false,false, , ,false, 
+cardNo,String,false,false, , ,false, 
+cardStatusCode,String,false,false, , ,false, 
+cardStatusDesc,String,false,false, , ,false, 
+cashOutAmount,String,false,false, , ,false, 
+cashOutAmt,String,false,false, , ,false, 
+city,String,false,false, , ,false, 
+country,String,false,false, , ,false, 
+description,String,false,false, , ,false, 
+feeAmount,String,false,false, , ,false, 
+linkedCards,Vector,false,false, , ,true,<default>
+pin,String,false,false, , ,false, 
+preAuthTransId,String,false,false, , ,false, 
+respCode,String,false,false, , ,false, 
+respDesc,String,false,false, , ,false, 
+stateCode,String,false,false, , ,false, 
+switchAcctNo,String,false,false, , ,false, 
+switchAuditNo,String,false,false, , ,false, 
+switchRoutingNo,String,false,false, , ,false, 
+switchTransId,String,false,false, , ,false, 
+toCardAccountNo,String,false,false, , ,false, 
+toCardBalance,String,false,false, , ,true,<default>
+toCardExpDate,String,false,false, , ,false, 
+toCardNo,String,false,false, , ,true,<default>
+transactionId,String,false,false, , ,false, 
+transactionList,java.util.Vector,false,false, , ,false, 
+transCat,String,false,false, , ,false, 
+transferId,String,false,false, , ,false, 
+transId,String,false,false, , ,false, 
+zipCode,String,false,false, , ,false, 
+[IconNames]
+
+
+
+

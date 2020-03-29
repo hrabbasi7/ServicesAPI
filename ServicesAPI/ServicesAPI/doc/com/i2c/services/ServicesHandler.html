@@ -1,0 +1,508 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class com.i2c.services.ServicesHandler</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">com.i2c.services</FONT>
+<BR>Class ServicesHandler</H2>
+<DL>
+<DT>public class <B>ServicesHandler</B>
+</DL>
+<DL><DD><p>Title: ServicesHandler</p> <p>Description: This class provides different Services i.e. For Cards, For Transactions and ACH etc</p> <p><b>Note1 :</b> The methods of this class should not be called with an open ResultSet <p><b>Note2 :</b> It is strictly assumed that parameters passed to each method will be validated at Caller's End <p>Copyright: Copyright (c) 2004</p> <p>Company: I2c Inc</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Agohar</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>getInstance</H3>
+<PRE>
+public static ServicesHandler <B>getInstance</B>(Connection&nbsp;_con,
+                                          String&nbsp;servicesLogPath)</PRE>
+<DL><DD>This method is to get the instance of ServicesHandler Class<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection -- Connection Object</DD>
+<DD><CODE>servicesLogPath</CODE> - String -- Path to form the log file</DD>
+<DT><B>Returns:</B><DD>ServicesHandler</DD>
+</DL>
+<HR>
+
+<H3>echo</H3>
+<PRE>
+public ServicesResponseObj <B>echo</B>()</PRE>
+<DL><DD>This method is to echo the MCP System whether it is up or not<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Returns:</B><DD>ServicesResponseObj <br> <br>1. Response Code ---- 00= success <br>2. Response Description</DD>
+</DL>
+<HR>
+
+<H3>getCardStatus</H3>
+<PRE>
+public ServicesResponseObj <B>getCardStatus</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the latest status of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0 <br>12. Device ID String, Device Id from where the transaction is initiated --- Optional <br>13. Card Acceptor Code String, Card Acceptor Code --- Opational <br>14.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>15. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Card Status Code String, Status Code of the card if response is successful else null <br>4. Card Status Description String, Description of Card Status if response is successful else null <br>5. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>activateCard</H3>
+<PRE>
+public ServicesResponseObj <B>activateCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to activate the specified card and also to load the amount after activating if amount is supplied<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>addFunds</H3>
+<PRE>
+public ServicesResponseObj <B>addFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to add the supplied amount in the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount to add in the balance of the supplied card -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>allCashOut</H3>
+<PRE>
+public ServicesResponseObj <B>allCashOut</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to release all the cash from the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Cashout amount String, The Amount which has been cashed out from the supplied card if applyFee = Y else NULL <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>changeACHAccountInfo</H3>
+<PRE>
+public ServicesResponseObj <B>changeACHAccountInfo</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to change the ACH Account Information (for ACH Account for Withdraw only)<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Optional <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Optional <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Optional <br>12. Routing No String, Bank Routing No --- Optional <br>13. ACH Account No String, ACH Account Identifier against which the Information will be changed --- Mandatory <br>14. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>15. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>changeACHAccountNick</H3>
+<PRE>
+public ServicesResponseObj <B>changeACHAccountNick</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to change the Account Nick of the verified ACH Account (for Load and withdraw both)<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name to Change --- Mandatory <br>7. ACH Account No String, ACH Account No to change the nick name --- Mandatory <br>8. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>9. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>createACHAccountForLoad</H3>
+<PRE>
+public ServicesResponseObj <B>createACHAccountForLoad</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to create the ACH Account for ACH Load Transactions only<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Mandatory <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Mandatory <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Mandatory <br>12. Routing No String, Bank Routing No --- Mandatory <br>13. ACH Account No String, ACH Account Identifier against which the Information will be changed --- Mandatory <br>14. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>15. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. ACH Account ID String, Unique identification of the ACH Account created in case of success else null <br>4. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>createACHAccountForLoadAndWithdraw</H3>
+<PRE>
+public ServicesResponseObj <B>createACHAccountForLoadAndWithdraw</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to create the ACH Account for ACH Load and Withdraw only<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Mandatory <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Mandatory <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Mandatory <br>12. Routing No String, Bank Routing No --- Mandatory <br>13. ACH Account No String, ACH Account Identifier against which the Information will be changed --- Mandatory <br>14. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>15. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. ACH Account ID String, Unique identification of the ACH Account created in case of success else null <br>4. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>createACHAccountForWithdraw</H3>
+<PRE>
+public ServicesResponseObj <B>createACHAccountForWithdraw</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to create the ACH Account for ACH Withdraw only<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Mandatory <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Mandatory <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Mandatory <br>12. Routing No String, Bank Routing No --- Mandatory <br>13. ACH Account No String, ACH Account Identifier against which the Information will be changed --- Mandatory <br>14. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>15. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. ACH Account ID String, Unique identification of the ACH Account created in case of success else null <br>4. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>creditFunds</H3>
+<PRE>
+public ServicesResponseObj <B>creditFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to credit the amount in the supplied Card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount to add in the balance of the supplied card -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>deactivateCard</H3>
+<PRE>
+public ServicesResponseObj <B>deactivateCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to deactivate the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>debitFunds</H3>
+<PRE>
+public ServicesResponseObj <B>debitFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to debit the supplied amount from the card supplied<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount to debit in the balance of the supplied card -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>forcePostTransaction</H3>
+<PRE>
+public ServicesResponseObj <B>forcePostTransaction</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to settle the pre authorization transaction<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Pre Auth Trans Id String, Pre Authorization Transaction ID -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Description String, Description or comments -- Optional <br>9. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getACHAccountStatus</H3>
+<PRE>
+public ServicesResponseObj <B>getACHAccountStatus</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the status of the supplied ACH Account<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. ACH Account No String, ACH Account No to get the status -- Mandatory <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. ACH Account Status Code String, Status Code <br>5. ACH Account Status Description String, Status Description <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>getCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the Access Code of the supplied Card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. AAC String, Required Access Code in case of success only else null <br>5. Balance String, The current balance of the supplied card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardBalance</H3>
+<PRE>
+public ServicesResponseObj <B>getCardBalance</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the current balance of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardHolderAccounts</H3>
+<PRE>
+public ServicesResponseObj <B>getCardHolderAccounts</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the Accounts associated with the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Card Accounts List Vector, List of Card Accounts associated with supplied card in case of success else null <br>5. Balance String, The current balance of the supplied card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardMiniStatement</H3>
+<PRE>
+public ServicesResponseObj <B>getCardMiniStatement</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the mini statement of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. No of Trans String, No of transactions to include in mini statement --- Optional Default = 5 <br>7. Description String, Description / Comments --- Optional <br>8. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>9. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. List of Transactions Vecotr, List of transactions in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardPIN</H3>
+<PRE>
+public ServicesResponseObj <B>getCardPIN</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the PIN of the supplied Card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. PIN String, Required PIN in case of success only else null <br>5. Balance String, The current balance of the supplied card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getTransactionHistory</H3>
+<PRE>
+public ServicesResponseObj <B>getTransactionHistory</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the transaction history of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Date From String, Date from which to pick the transactions --- Optional Default = Today <br>7. Date To String, Date to which to pick the transactions --- Optional Default = Today <br>8. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>9. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. List of Transactions Vecotr, List of transactions in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getTransactionInfo</H3>
+<PRE>
+public ServicesResponseObj <B>getTransactionInfo</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the Transaction Information of the supplied Card against supplied transaction ID<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Transaction ID String, Transaction ID to look up the details --- Mandatory <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Additional Info String list, Transaction Additional Information in case of success else null <br>5. Account Number String, Account Number in case of success else null <br>6. Trans Type Id String, Transaction Type in case of success else null <br>7. DeviceId String, Device ID of Transaction in case of success else null <br>8. TransDate String, Transaction Date in case of success else null <br>9. Business Date String, Busniess Date of the transaction in case of success else null <br>10. AcceptNameAndLoc String, Acceptor Name and Location in case of success else null <br>11. Amount String, Transaction Amount in case of success else null <br>12. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>loadFunds</H3>
+<PRE>
+public ServicesResponseObj <B>loadFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to load the supplied amount from the supplied bank account information in the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Mandatory <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Mandatory <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Mandatory <br>12. Routing No String, Bank Routing No --- Mandatory <br>13. Amount String, Amount to load --- Mandatory <br>14. RetryOnFailure String, Whether to retry on failure of transaction or not --- Optional <br>15. MaxTries String, Max No of tries to be done in case of failure and retryonfail = true --- Optional <br>16. Comments String, Comments / Description --- Optional <br>17. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>18. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>19. Device ID String, Device Id from where the transaction is initiated --- Optional <br>20. Card Acceptor Code String, Card Acceptor Code --- Opational <br>21. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>22. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. ACH Account ID String, Unique identification of the ACH Account created in case of success else null <br>4. Balance String, Current Balance of card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>preAuthorization</H3>
+<PRE>
+public ServicesResponseObj <B>preAuthorization</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to make the preauthorization for a transaction<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount to add in the balance of the supplied card -- Mandatory <br>7. Description String, Description / Comments --- Optional <br>8. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>9. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. PreAuthTransId String, Pre-Authorization Transaction ID in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>replaceStolenCard</H3>
+<PRE>
+public ServicesResponseObj <B>replaceStolenCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to replace the supplied stolen card to supplied new card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. NewCardNo String, New Card No to transfer the stolen card balance to it -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. NewCardNo String, New Card No in case of success else null <br>6. NewCardAccountNo String, New Card Account No in case of success else null <br>7. NewCardBalance String, New Card Balance in case of success else null <br>8. NewCardExipryDate String, New Card Expiry Date in case of success else null <br>9. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>resetCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>resetCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to Reset the Card Acccess code of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. NewAAC String, New AAC of reset against supplied card no in case of success else null <br>5. Balance String, The current balance of the supplied card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>resetPIN</H3>
+<PRE>
+public ServicesResponseObj <B>resetPIN</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to Reset the PIN of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. batchPIN String, Flag to indicate whether the pin will be changed through batch file or not, Y=Yes and N=No - Default= Y --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. NewPIN String, New PIN of reset against supplied card no in case of success else null <br>5. Balance String, The current balance of the supplied card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>selfTransfer</H3>
+<PRE>
+public ServicesResponseObj <B>selfTransfer</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to transfer the funds between different cards of same card holder<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- IF trans Id is provided then Optional Else Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. ToCardNo String, To Card No --- IF trans Id is provided then Optional Else Mandatory <br>7. ToCardAccountNo String, To Card Account Number --- Optional <br>8. Amount String, Amount to transfer --- IF trans Id is provided then Optional Else Mandatory <br>9. TransferDate String, Transfer Date --- IF trans Id is provided then Optional Else Mandatory <br>10. RetryOnFailure String, Whether to retry on failure or not --- Optional Default = N <br>11. MaxTries String, Maximum reties to be done --- Optional Default = 0 <br>12. Comments String, Comments / Description --- Optional <br>13. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>14. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>15. Trans Id String, Transfer Id of trans_reqs table. If this field is supplied all other transfer related fields will be ignored -- Optional <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. FromCardBalance String, The current balance of the from card in case of success else null <br>5. ToCardBalance String, The current balance of the to card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>setCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to set the Card Acccess code of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. NewAAC String, New Access Code to set --- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardPIN</H3>
+<PRE>
+public ServicesResponseObj <B>setCardPIN</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to set the PIN of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. NewPIN String, New PIN to set --- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. batchPIN String, Flag to indicate whether the pin will be changed through batch file or not, Y=Yes and N=No - Default= Y --- Mandatory <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardStatus</H3>
+<PRE>
+public ServicesResponseObj <B>setCardStatus</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to set the Card status of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. NewStatus String, New status to set --- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>shareFunds</H3>
+<PRE>
+public ServicesResponseObj <B>shareFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used Share the funds among the supplied from and to cards<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- IF trans Id is provided then Optional Else Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. ToCardNo String, To Card No --- IF trans Id is provided then Optional Else Mandatory <br>7. ToCardAccountNo String, To Card Account Number --- Optional <br>8. Amount String, Amount to transfer --- IF trans Id is provided then Optional Else Mandatory <br>9. TransferDate String, Transfer Date --- IF trans Id is provided then Optional Else Mandatory <br>10. RetryOnFailure String, Whether to retry on failure or not --- Optional Default = N <br>11. MaxTries String, Maximum reties to be done --- Optional Default = 0 <br>12. Comments String, Comments / Description --- Optional <br>13. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>14. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>15. Trans Id String, Transfer Id of trans_reqs table. If this field is supplied all other transfer related fields will be ignored -- Optional <br>16. Device ID String, Device Id from where the transaction is initiated --- Optional <br>17. Card Acceptor Code String, Card Acceptor Code --- Opational <br>18. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>19. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. FromCardBalance String, The current balance of the from card in case of success else null <br>5. ToCardBalance String, The current balance of the to card in case of success else null <br>6. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>updateCardHolderProfile</H3>
+<PRE>
+public ServicesResponseObj <B>updateCardHolderProfile</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used Share the funds among the supplied from and to cards<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. FirstName String, First Name to update --- Optional <br>7. MiddleName String, Middle Name to update --- Optional <br>8. LastName String, Last Name to update --- Optional <br>9. DOB String, DOB to update --- Optional <br>10. Address String, Address to update --- Optional <br>11. City String, City to update --- Optional <br>12. StateCode String, State Code to update --- Optional <br>13. Country String, Country to update --- Optional <br>14. HomePhone String, Home Phone No to update --- Optional <br>15. WorkPhone String, Work Phone No to update --- Optional <br>16. Email String, Email to update --- Optional <br>17. Gender String, Gender to update --- Optional <br>18. MotherMaindenName String, Mother Mainden Name to update --- Optional <br>19. SSN String, SSN to update --- Optional <br>20. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>21. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>22. Device ID String, Device Id from where the transaction is initiated --- Optional <br>23. Card Acceptor Code String, Card Acceptor Code --- Opational <br>24. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>25. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>validateCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>validateCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to validate the supplied Card Acccess code of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>4. Account No String, Account Number of the supplied card to verify --- Optional <br>5. AAC String, New Access Code to validate --- Mandatory <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>validateCardPIN</H3>
+<PRE>
+public ServicesResponseObj <B>validateCardPIN</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to validate the supplied PIN of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>4. Account No String, Account Number of the supplied card to verify --- Optional <br>5. PIN String, PIN to validate --- Mandatory <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>verifyACHAccount</H3>
+<PRE>
+public ServicesResponseObj <B>verifyACHAccount</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to Reset the Card Acccess code of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. ACH Account No String, ACH Account No to verify --- Mandatory <br>7. TestAmount1 String, Test Amount No 1 to verify --- Mandatory <br>8. TestAmount2 String, Test Amount No 2 to verify --- Mandatory <br>9. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>10. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>11. Device ID String, Device Id from where the transaction is initiated --- Optional <br>12. Card Acceptor Code String, Card Acceptor Code --- Opational <br>13.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>14. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>withdrawFunds</H3>
+<PRE>
+public ServicesResponseObj <B>withdrawFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to withdraw the supplied amount from the supplied Card to the supplied Bank Account Information<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Nick Name String, ACH Account Nick Name --- Mandatory <br>7. Bank Name String, Name of the Bank --- Optional <br>8. Bank Address String, Address of the Bank --- Optional <br>9. Account No String, Bank Account No --- Mandatory <br>10. Account Title String, Bank Account Title --- Optional <br>11. Account Type String , Bank Account Type - 11 = Checking and 01 = Savings --- Mandatory <br>12. Routing No String, Bank Routing No --- Mandatory <br>13. Amount String, Amount to withdraw --- Mandatory <br>14. RetryOnFailure String, Whether to retry on failure of transaction or not --- Optional <br>15. MaxTries String, Max No of tries to be done in case of failure and retryonfail = true --- Optional <br>16. Comments String, Comments / Description --- Optional <br>17. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>18. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>19. Device ID String, Device Id from where the transaction is initiated --- Optional <br>20. Card Acceptor Code String, Card Acceptor Code --- Opational <br>21. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>22. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. ACH Account ID String, Unique identification of the ACH Account created in case of success else null <br>4. Balance String, Current Balance of card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>makePurchaseTransaction</H3>
+<PRE>
+public ServicesResponseObj <B>makePurchaseTransaction</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to make the purchase transaction of the supplied amount<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount to make the purchase transaction -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>performReversal</H3>
+<PRE>
+public ServicesResponseObj <B>performReversal</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to reverse the supplied transaction id<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. TransactionID String, Transaction ID to reverse the transaction -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the specified operation in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>acquirerChargeFee</H3>
+<PRE>
+public ServicesResponseObj <B>acquirerChargeFee</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to apply the acquirer charge fee with the supplied Card No<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. Amount String, Amount charge the fee --- Mandatory <br>7. Description String, Description for the Fee --- Mandatory <br>6. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>7. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>8. Device ID String, Device Id from where the transaction is initiated --- Optional <br>9. Card Acceptor Code String, Card Acceptor Code --- Opational <br>10.Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>11. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the get Card Status Transaction of MCP System in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>reverseAcquirerFee</H3>
+<PRE>
+public ServicesResponseObj <B>reverseAcquirerFee</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to reverse the Acquirer Charge Fee<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. TransactionID String, Transaction ID to reverse the acquirer charge fee -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Device ID String, Device Id from where the transaction is initiated --- Optional <br>10. Card Acceptor Code String, Card Acceptor Code --- Opational <br>11. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>12. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the specified operation in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getACHAccountInfo</H3>
+<PRE>
+public ServicesResponseObj <B>getACHAccountInfo</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the ACH Account Information<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Expiry Date String, Expiry Date of the supplied Card to verify --- Optional <br>3. AAC String , Account Access Code of the supplied card to verify --- Optional <br>4. PIN String, Personal Identification No of the supplied card to verify --- Optional <br>5. Account No String, Account Number of the supplied card to verify --- Optional <br>6. TransactionID String, Transaction ID to reverse the acquirer charge fee -- Mandatory <br>7. Apply Fee String, Flag to indicate whether to apply the fee on supplied card for this service or not , Y=Yes and N=No - Default = Y --- Optional <br>8. Device Type String, Device Type to log the transactions e.g. I = IVR, W = WEB, H = WEB SERVICES etc --- Mandatory <br>9. Bank Account No String, Bank Account No <br>10. Device ID String, Device Id from where the transaction is initiated --- Optional <br>11. Card Acceptor Code String, Card Acceptor Code --- Opational <br>12. Card Acceptor Name And Location String, Card Acceptor Name And Location --- Optional <br>13. MCC String, Merchant Category Code -- Optional Default=0</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description <br>3. Transaction Id String, ID of the specified operation in case of success else null <br>4. Balance String, The current balance of the supplied card in case of success else null <br>5. Fee Amount String, Amount of the Fee applied if applyFee=Y else null <br>6. ACH Account Status String, Status of ACH Account <br>7. ACH Type String, For Load = 1, For Withdraw = 2 <br>8. Account Type String, Bank Account Type <br>9. Account Title String, Bank Account Title <br>10. Routing No String, Bank Routing No <br>11. Bank Name String, Bank Name</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>applyServiceFee</H3>
+<PRE>
+public ServicesResponseObj <B>applyServiceFee</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used apply a specific fee on supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information as following: <br>1. Card No String, The number of card for which to get the status -- Mandatory <br>2. Amount String, The amount if service basis is %age only -- Optional <br>3. Trans Id String, ISO Serial No -- Optional <br>4. Service Id String, Service ID to implement -- Mandatory <br>5. Description String, Description -- Optional</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information as following: <br>1. Response Code String, Response Code 00=Success else Error <br>2. Response Description String, Response Description</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,317 @@
+package com.i2c.service.billpaymentschedularservice.PayeeService;
+
+import java.io.*;
+import java.sql.*;
+
+import com.i2c.billpayment.jobs.*;
+import com.i2c.billpayment.vo.*;
+import com.i2c.service.billpaymentschedularservice.monitor.*;
+import com.i2c.service.util.*;
+import com.i2c.service.billpaymentschedularservice.FTPService.FTPInfoVO;
+import com.i2c.service.billpaymentschedularservice.FTPService.JFtp;
+
+
+
+public class ResponseServiceThread
+    extends Thread {
+  private String instanceName = null;
+  private ResponseServiceMonitor monitorThread = null;
+
+
+  public ResponseServiceThread(String instanceName,ResponseServiceMonitor monitorThread) {
+    this.instanceName = instanceName;
+    this.monitorThread = monitorThread;
+  }
+
+  public void run() {
+
+    PayeeServiceDAO responseServiceDAO = null;
+    Connection dbConn = null;
+    Connection cardInstDBConn = null;
+    boolean batchTime = false;
+    StringBuffer responseTransStatus = null;
+    ResponseServiceMailer responseMailer = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ResponseServiceThread -- Method Name: run --- ResponseService Thread is started");
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ResponseServiceThread -- Method Name: run --- Getting Database Connection for instance --->" + instanceName);
+      dbConn = DatabaseHandler.getConnection("ResponseServiceThread",instanceName);
+      responseServiceDAO = new PayeeServiceDAO(instanceName,dbConn);
+
+      while (true) {
+
+        try {
+          try {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ResponseServiceThread -- Method Name: run --- Calling method for testing database connection");
+            testConnection(dbConn);
+          }catch (SQLException tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ResponseServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ResponseServiceThread",instanceName);
+              responseServiceDAO = new PayeeServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }catch (Exception tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ResponseServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ResponseServiceThread",instanceName);
+              responseServiceDAO = new PayeeServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.RESPONSE_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ResponseServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }
+
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.RESPONSE_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nGetting current date time for updating RESPONSE_SRV monitoring Date Time ");
+          java.util.Date currDate = getCurrentDate();
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.RESPONSE_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nUpdating RESPONSE_SRV Monitoring Date Time --- Current Date Time Got--->" +
+              currDate);
+          monitorThread.setMonitorDateTime(currDate);
+          // Check Service allowed for Instance
+          if (responseServiceDAO.processScheduler(dbConn,Constants.USE_BILL_RESPONSE_PROCESSING)) {
+            batchTime = responseServiceDAO.checkScheduleTime();
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.RESPONSE_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "ResponseServiceThread --- run --- Response received from checkScheduleTime ---> " +
+                    batchTime);
+            if (batchTime) {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.RESPONSE_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ResponseServiceThread --- run --- Invoking Bill Response File processing");
+              try {
+                /*************<<<*************>>>>>***********/
+                cardInstDBConn = DatabaseHandler.getConnection("ResponseServiceThread","card_inst");
+                responseTransStatus = invokeResponseProcessing(cardInstDBConn,responseServiceDAO);
+                /**************\****************\*****************/
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.RESPONSE_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "ResponseServiceThread --- run --- Sending success email");
+
+                responseMailer = new ResponseServiceMailer(Constants.RESPONSE_SRV_SUCC, instanceName, null,
+                    responseTransStatus.toString(),dbConn);
+                responseMailer.sendEmailNotification();
+              }
+              catch (Exception procEx) {
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.RESPONSE_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "ResponseServiceThread --- run --- Exception in processing of Bill Response File Processing --- Emailing to Admin-->" + procEx);
+                responseMailer = new ResponseServiceMailer(Constants.
+                    RESPONSE_SRV_FAIL, instanceName, Constants.getMachineIP(),
+                    procEx.toString(), CommonUtilities.getStackTrace(procEx),dbConn);
+                responseMailer.sendEmailNotification();
+              }
+
+            } //end if check schTime arrived
+            else {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.RESPONSE_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ResponseServiceThread --- run --- Response File processing Time not arrived -- Sleeping for default time");
+              sleep(Constants.RESPONSE_SLEEP_TIME);
+            }
+          } //end if check isAllowed
+          else {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.RESPONSE_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "ResponseServiceThread --- run --- Response File processing is not allowed for this instance");
+            sleep(Constants.RESPONSE_SLEEP_TIME);
+          }
+        } //end inner try
+        catch (Exception ex) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.RESPONSE_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_FINEST),
+                  "ResponseServiceThread --- Excpetion in Bill Response File processing--->" +
+                  ex);
+          sleep(Constants.RESPONSE_SLEEP_TIME);
+        } //end inner catch
+      } //end while
+    } //end outer try
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_FINEST),
+              "ResponseServiceThread --- Outer Catch -- Excpetion in Response Service Thread--->" +
+              ex);
+    }
+  } //end run
+
+  private StringBuffer invokeResponseProcessing(Connection dbConn, PayeeServiceDAO responseDao) throws Exception {
+
+    boolean isDownload = false;
+    FTPInfoVO ftpVo = null;
+    ResponseFileHandler responseHandler = null;
+    JFtp ftpServer = null;
+    StringBuffer logPath = new StringBuffer();
+    StringBuffer returnMsg = null;
+    StringBuffer ouputPath = new StringBuffer();
+    String movePath = new String();
+
+    try {
+      logPath.append(Constants.LOG_FILE_PATH + File.separator + instanceName +
+                     File.separator +
+                     Constants.RESPONSE_SERVICE);
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ResponseServiceThread --- invokeResponseProcessing --- Log File Path to be passed--->" +
+              logPath);
+
+      if (!new File(logPath.toString()).exists()) {
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.RESPONSE_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ResponseServiceThread --- invokeResponseProcessing --- Creating Log File Folder(s)--->" +
+                new File(logPath.toString()).mkdirs());
+      }
+      if (Constants.RESPONSE_OUTPUT_PATH != null &&
+          Constants.RESPONSE_OUTPUT_PATH.trim().length() > 0) {
+        ouputPath.append(Constants.RESPONSE_OUTPUT_PATH + File.separator +
+                         "Download" + File.separator + instanceName);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.RESPONSE_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ResponseServiceThread --- invokeResponseProcessing --- Output Path to be passed--->" +
+                ouputPath);
+        Constants.FTP_DOWNLOAD_FOLDER = ouputPath.toString();
+        if (!new File(ouputPath.toString()).exists()) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.RESPONSE_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "ResponseServiceThread --- invokeResponseProcessing --- Creating OutPut Path Folder(s)--->" +
+                  new File(ouputPath.toString()).mkdirs());
+        }
+      }else {
+        CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ResponseServiceThread --- invokeResponseProcessing --- ResponseServiceThread Output Path value does not exist in configuration file-->" + Constants.RESPONSE_OUTPUT_PATH);
+
+        throw new Exception(
+            "ResponseServiceThread Path value does not exist in configuration file--->" +
+            Constants.RESPONSE_OUTPUT_PATH);
+      }
+      /**************************************************
+       * Response File Downloading
+       **************************************************/
+      //getting ftp information from DB
+      ftpVo = responseDao.getResponseFtpInfo();
+      ftpServer = new JFtp(ftpVo);
+      ftpServer.connect();
+      String responseFileName = new String(ftpVo.getFilePreFix()+"."+CommonUtilities.getCurrentFormatDate("MMddyyyy"));
+      ouputPath.append(File.separator + responseFileName);
+      System.out.println("Output Path with File Name ----> " + ouputPath.toString());
+      isDownload = ftpServer.download(responseFileName);
+      System.out.println(" isFile Downloaded --------> " + isDownload);
+      ftpServer.disconnect();
+      if (isDownload){
+        /*************************************/
+        responseHandler = new ResponseFileHandler(dbConn, logPath.toString(),
+                                                  ouputPath.toString());
+        responseHandler.processResponseFile();
+
+        returnMsg = new StringBuffer();
+
+        returnMsg.append("\nFile Name : " +
+                         ResponseFileHandler.filsStatsObj.getFileName());
+        returnMsg.append("\nTotal Amount : " +
+                         ResponseFileHandler.filsStatsObj.getTotalAmount());
+        returnMsg.append("\nTotal Batches : " +
+                         ResponseFileHandler.filsStatsObj.getTotalBatches());
+        returnMsg.append("\nTotal Failed Transactions : " +
+                         ResponseFileHandler.filsStatsObj.getTotalFailedTrans());
+        returnMsg.append("\nTotal SucessFul Transactions : " +
+                         ResponseFileHandler.filsStatsObj.getTotalSuccessTrans());
+        returnMsg.append("\nTotal Transactions : " +
+                         ResponseFileHandler.filsStatsObj.getTotalTrans());
+
+        /*****************************************/
+        movePath = Constants.ADJUSTMENT_OUTPUT_PATH + File.separator +
+            "Processed" + File.separator + instanceName;
+        CommonUtilities.moveFileToThisFolder(ouputPath.toString(), movePath,
+                                             responseFileName);
+
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.RESPONSE_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ResponseServiceThread --- invokeResponseProcessing --- Resposne Received from API --->" +
+                returnMsg);
+
+        CommonUtilities.getLogger(instanceName,
+                                        Constants.RESPONSE_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ResponseServiceThread --- run --- Updating the NEXT Schedule Date");
+              responseDao.updateNextSchedule();
+            }
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_WARNING),
+              "ResponseServiceThread --- invokeResponseProcessing --- Exception in processing of Response File Processing--->" +
+              ex);
+      throw new Exception("Exception in processing of Response Service Thread--->" +
+                          ex);
+
+    }
+    return returnMsg;
+  } //end method
+
+  private java.util.Date getCurrentDate() {
+    java.util.Date currDate = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).log(
+          LogLevel.
+          getLevel(Constants.LOG_FINEST),
+          " Getting current Date ");
+      currDate = new java.util.Date();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.RESPONSE_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Getting current Date --->" + ex);
+    }
+    return currDate;
+  }
+
+  private void testConnection(Connection dbConn) throws SQLException {
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+
+    CommonUtilities.getLogger(instanceName,
+                              Constants.RESPONSE_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Method for testing database conenction ");
+
+    query.append("select business_date from system_variables");
+    stmt = dbConn.createStatement();
+    stmt.executeQuery(query.toString());
+    stmt.close();
+  }
+
+
+}

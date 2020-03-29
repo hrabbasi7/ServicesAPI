@@ -1,0 +1,200 @@
+package com.i2c.schedulerframework.main;
+
+import javax.mail.*;
+import java.io.*;
+import javax.mail.internet.*;
+import java.util.*;
+import javax.activation.*;
+
+import java.text.SimpleDateFormat;
+
+import com.i2c.schedulerframework.util.*;
+import com.i2c.utils.logging.I2cLogger;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ServiceMail {
+//  private String smtpServer = "";
+//  private String recipientsTO[];
+//  private String recipientsCC[];
+//  private String recipientsBCC[];
+//
+//  private String subject = "";
+//  private String message = "";
+//  private String from = "";
+//  private String titleFile = null;
+//  private String fileName[];
+//  public void setFileTitle(String s) {
+//    titleFile = s;
+//  }
+//
+//  public void setSMTPServer(String s) {
+//    smtpServer = s;
+//  }
+//
+//  public void setRecipientsTO(String[] s) {
+//    recipientsTO = s;
+//  }
+//
+//  public void setRecipientsCC(String[] s) {
+//    recipientsCC = s;
+//  }
+//
+//  public void setRecipientsBCC(String[] s) {
+//    recipientsBCC = s;
+//  }
+//
+//  public void setSubject(String s) {
+//    subject = s;
+//  }
+//
+//  public void setFrom(String s) {
+//    from = s;
+//  }
+//
+//  public void setMessage(String s) {
+//    message = s;
+//  }
+//
+//  public void setFileName(String[] s) {
+//    fileName = s;
+//  }
+
+  public void postMail() throws MessagingException {
+
+    try {
+
+      boolean debug = false;
+
+      //Set the host smtp address
+      Properties props = new Properties();
+      props.put("mail.smtp.host", smtpServer);
+
+      System.out.println("SMTP Server --->" + smtpServer);
+
+      // create some properties and get the default Session
+      Session session = Session.getDefaultInstance(props, null);
+      session.setDebug(debug);
+
+      // create a message
+      Message msg = new MimeMessage(session);
+
+      // set the from and to address
+      InternetAddress addressFrom = new InternetAddress(from);
+      msg.setFrom(addressFrom);
+
+      System.out.println("From Address : " + addressFrom);
+
+      InternetAddress[] addressTo = new InternetAddress[recipientsTO.length];
+      for (int i = 0; i < recipientsTO.length; i++) {
+        addressTo[i] = new InternetAddress(recipientsTO[i]);
+
+        System.out.println("To addresse# + " + i + "  : " + addressTo[i]);
+      }
+
+      if (recipientsCC != null && recipientsCC.length > 0) {
+        InternetAddress[] addressCC = new InternetAddress[recipientsCC.length];
+        for (int i = 0; i < recipientsCC.length; i++) {
+          addressCC[i] = new InternetAddress(recipientsCC[i]);
+
+          System.out.println("CC addresse# + " + i + "  : " + addressCC[i]);
+        } //end for
+        msg.setRecipients(Message.RecipientType.CC, addressCC);
+      } //end cc if
+
+      //Setting the BCC email address
+      if (recipientsBCC != null && recipientsBCC.length > 0) {
+        InternetAddress[] addressBCC = new InternetAddress[recipientsBCC.length];
+        for (int i = 0; i < recipientsBCC.length; i++) {
+          addressBCC[i] = new InternetAddress(recipientsBCC[i]);
+
+          System.out.println("BCC addresse# + " + i + "  : " + addressBCC[i]);
+        } //end for
+        msg.setRecipients(Message.RecipientType.BCC, addressBCC);
+      } //end if
+
+      msg.setRecipients(Message.RecipientType.TO, addressTo);
+
+      // Optional : You can also set your custom headers in the Email if you Want
+      msg.addHeader("MyHeaderName", "myHeaderValue");
+
+      // Setting the Subject and Content Type
+      msg.setSubject(subject);
+
+      msg.setSentDate(CommonUtilities.getMailSentDate());
+
+      System.out.println("Subject : " + subject);
+
+      msg.setContent(message, "text/plain");
+
+      System.out.println("Message : " + message);
+
+      String titleFileName = "";
+      String FullFileName = "";
+
+      Multipart multipart = new MimeMultipart();
+
+      if (fileName != null) {
+        System.out.println("File Name Array : " + fileName.length);
+        //Attaching the files
+        for (int i = 0; i < fileName.length; ++i) {
+          FullFileName = fileName[i];
+          titleFileName = BaseConstants.REPORT_FILE_TITLE + " " +
+              getFileTitle(FullFileName);
+          System.out.println("Title File Name -->" + titleFileName);
+
+          File fileData = new File(FullFileName);
+          MimeBodyPart mbp2 = new MimeBodyPart();
+          FileDataSource fds = new FileDataSource(fileData);
+          DataHandler dh = new DataHandler(fds);
+          mbp2.setFileName(titleFileName);
+          mbp2.setDescription("Attached File:" + fileName);
+          mbp2.setDisposition(Part.ATTACHMENT);
+          mbp2.setDataHandler(dh);
+          multipart.addBodyPart(mbp2);
+        } //end for
+      } //end if
+      //Attachment Part
+      MimeBodyPart mbp3 = new MimeBodyPart();
+      mbp3.setText(message);
+      multipart.addBodyPart(mbp3);
+      msg.setContent(multipart);
+      //end Attchment part
+
+      Transport.send(msg);
+      System.out.println("Mail sent");
+
+    }
+    catch (Exception e) {
+      System.out.println("Error in Mail class :" + e.toString());
+      throw new MessagingException("Error in sending Email -->" + e);
+    } //end catch
+  } //end classs
+
+  public String getFileTitle(String value) {
+    try {
+      ServiceMain.lgr.log(I2cLogger.FINEST,
+                                      " File Title to be get --->" + value);
+      //Getting the file separator
+      if (value != null && value.indexOf(File.separator) > -1) {
+        value = value.substring(value.lastIndexOf(File.separator) + 1,
+                                value.length());
+      } //end if
+      ServiceMain.lgr.log(I2cLogger.FINEST,
+                                      "Final File Title --->" + value);
+    }
+    catch (Exception e) {
+      ServiceMain.lgr.log(I2cLogger.WARNING,
+                                      " Exception in Getting File Title -->" +
+                                      value);
+    } //end catch
+    return value;
+  } //end get file title
+}

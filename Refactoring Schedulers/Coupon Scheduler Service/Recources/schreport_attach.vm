@@ -1,0 +1,17 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Report Notification
+ 
+Schedule No. :  $reportSchNo
+Report :  $reportName
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dear Subscriber,
+
+The report with schedule number $reportSchNo has been generated and is being sent as a compressed attachment with this email. To view this report please follow the instructions given below.
+
+1). Unzip the compressed file.
+2). Enter your passphrase when the dialog box appears. This is the passphrase that you have provided during your user registration process.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This system generated email is sent to you based on the notification settings for this report. Please contact your service provider for any queries or guidance.

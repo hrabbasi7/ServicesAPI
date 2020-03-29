@@ -1,0 +1,566 @@
+package com.i2c.genericschedulerframework.util;
+
+import com.i2c.genericschedulerframework.model.DbConfigBean;
+
+//import com.i2c.billpaymentschedularservice.main.ServiceMain;
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2003</p>
+ * <p>Company: </p>
+ * @author Haroon ur Rashid Abbasi
+ * @version 1.0
+ */
+
+public class Constants {
+
+  public static DbConfigBean CARD_INSTANCE_DB_CONN = null;
+
+//  public static String SIGMA_EXPORT_PATH = "";
+//  public static String SIGMA_EXPORT_FILE = "";
+//  public static String EXPORTED_FOLDER = "Exported";
+//  public static String FTP_DOWNLOAD_PATH = "D:\\";
+//  public static String FTP_DOWNLOAD_FOLDER ="billersList\\downLoad\\";
+//  public static String FTP_DOWNLOAD_FOLDER ="Haroon\\BillPayment\\Response_Files\\mcp\\Download\\";
+//  public static String FTP_UPLOAD_FOLDER = "Haroon\\BillPayment\\Payment_Files\\mcp\\Upload\\";
+//  public static String RESPONSE_FTP_DOWNLOAD_FOLDER ="";
+//  public static String ADJUSTMENT_FTP_DOWNLOAD_FOLDER ="";
+//  public static String PAYEE_FTP_DOWNLOAD_FOLDER = "";
+//  public static String FTP_UPLOAD_FOLDER = "";
+//  public static String FTP_DOWNLOAD_FOLDER = "";
+
+  /********************* BPayment  **************/
+  public static String PROCESSOR_ID = "1"; //-- Processor ID
+  public static String RESADJ_NO_OF_DAYS = "7"; //-- No of Days for which to Process Response and Adjustment
+  /*************************************************/
+
+  public static String COMMON_LOG_INFO = "common";
+  public static String PAYMENT_SERVICE_MONITOR_SERVICE="payment_service_monitor";
+  public static String PAYMENT_SERVICE="payment_service";
+  public static String RESPONSE_SERVICE_MONITOR_SERVICE="response_service_monitor";
+  public static String RESPONSE_SERVICE="response_service";
+  public static String ADJUSTMENT_SERVICE_MONITOR_SERVICE="adjustment_service_monitor";
+  public static String ADJUSTMENT_SERVICE="adjustment_service";
+  public static String PAYEE_SERVICE_MONITOR_SERVICE="payee_service_monitor";
+  public static String PAYEE_SERVICE="payee_service";
+  public static String PAYEE_SERVICE_API="payee_service_api";
+
+  public static String[] APPLICATIONS_NAME_ARRAY = {
+      PAYMENT_SERVICE_MONITOR_SERVICE,
+      PAYMENT_SERVICE,
+      RESPONSE_SERVICE_MONITOR_SERVICE,
+      RESPONSE_SERVICE,
+      ADJUSTMENT_SERVICE_MONITOR_SERVICE,
+      ADJUSTMENT_SERVICE,
+      PAYEE_SERVICE_MONITOR_SERVICE,
+      PAYEE_SERVICE};
+  public static String CARDS_PATH = "D:\\mcp";
+//  public static String ACH_DIR = "services_ach";
+//  public static String FTPS_DIR = "services_ftps";
+//  public static String INCOMING_FOLDER = "incoming";
+  //Date Formats to be used in the application
+  public static String DATE_FORMAT = "yyyy-MM-dd";
+  public static String DATE_FORMAT_DISPLAY = "yyyy-mm-dd";
+  public static String ACH_DATE_FORMAT = "MM/dd/yyyy";
+  public static String MAIL_DATE_FORMAT = "MMMM dd, yyyy";
+  public static String TIME_FORMAT = "HH:mm:ss";
+  public static String TIME_FORMAT_DISPLAY = "hh:mm:ss";
+//----------------Batch File Related Attributes-----------//
+  public static String CARD_BATCH_FILE = "CardHolderExtract";
+  public static String TRANSACTION_BATCH_FILE = "TransactionExtract";
+  public static String BATCH_AUTO_DOWNLOAD_FLAG = "auto_download";
+  public static String BATCH_AUTO_DECRYPT_FLAG = "auto_decrypt";
+  public static String BATCH_AUTO_UNZIP_FLAG = "auto_unzip";
+  public static String CARD_BATCH_FILE_NAME = "card_file";
+  public static String TRANS_BATCH_FILE_NAME = "trans_file";
+  public static String BATCH_STATUS = "batch_status";
+  public static String BATCH_FILE_DLOD_TYPE_SFTP = "S";
+  public static String BATCH_SWITCH_ID = "SOLSPARK";
+
+  //---------------------- Email IDs ------------------------//
+
+  public static String PAYMENT_SRV = "PAYMENT_SRV";
+  public static String PAYMENT_SRV_FAIL = "PAYMENT_SRV_FAIL";
+  public static String PAYMENT_SRV_SUCC = "PAYMENT_SRV_SUCC";
+  public static String RESPONSE_SRV = "RESPONSE_SRV";
+  public static String RESPONSE_SRV_FAIL = "RESPONSE_SRV_FAIL";
+  public static String RESPONSE_SRV_SUCC = "RESPONSE_SRV_SUCC";
+  public static String RESPONSE_DOWNLOAD_FAIL = "RESPONSE_DL_FAIL";
+  public static String RESPONSE_INFILE_FAIL = "RESPONSE_INFILE_FAIL";
+  public static String ADJUSTMENT_SRV = "ADJUSTMENT_SRV";
+  public static String ADJUSTMENT_SRV_FAIL = "ADJUSTMENT_SRV_FAIL";
+  public static String ADJUSTMENT_SRV_SUCC = "ADJUSTMENT_SRV_SUCC";
+  public static String ADJUSTMENT_DOWNLOAD_FAIL = "ADJUSTMENT_DL_FAIL";
+  public static String ADJUST_INFILE_FAIL = "ADJUST_INFILE_FAIL";
+  public static String PAYEE_SRV = "PAYEE_SRV";
+  public static String PAYEE_SRV_FAIL = "PAYEE_SRV_FAIL";
+  public static String PAYEE_SRV_SUCC = "PAYEE_SRV_SUCC";
+
+  //---------------------- Payment File Processing Status ----------------//
+
+  public static String SENT_PAYMENT_FILE_STATUS = "S";
+
+  //------------------------- Time formats -----------------------//
+  public static String ACH_DATE_TIME_FORMAT = "MM/dd/yyyy HH:mm:ss";
+  public static String US_LOCALE = "US";
+  public static String US_LANGUAGE = "EN";
+  public static String CST_TIME_ZONE = "CST";
+
+  public static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+  public static String ALERT_DATE_TIME_FORMAT = "dd/MM/yy HH:mm";
+  public static String EOD_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+  public static String EOD_TIME_FORMAT = "HH:mm:ss";
+  public static String EOD_TIME_FORMAT_MIN = "HH:mm";
+//  public static String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm:ss";
+  public static String FILE_DATE_TIME_FORMAT = "MMddyyyy_hhmmss";
+  public static String FILE_DATE_FORMAT = "MMddyyyy";
+  public static String TRUE_OPTION = "Y";
+  public static int DEFAULT_CARD_NUMBER_STRING = 0;
+  public static int DEFAULT_CARD_START_NUMBER_PADDING = 0;
+  public static int DEFAULT_CARD_END_NUMBER_PADDING = 9;
+  // common util
+  public static String CHECK_DIGIT_STRING = "2121212121212121212";
+  // baseDAO
+  public static String SERIAL_QUERY = " select dbinfo('sqlca.sqlerrd1') from ";
+  public static String INSERT_QUERY_INTO_VALUE = "into";
+  public static String INSERT_QUERY_COLUMN_START_VALUE = "(";
+
+  //File Download Constants
+  public static String STREAM_CONTENT_TYPE = "application/octet-stream";
+
+  //Cards Production Batch Constants
+
+//  public static String STARTNOSARRAY= "";
+//
+//  //CACM FILE VARIABLES
+//  public static String UNBATCHED_CACM_CARDS_STATUS = "T";
+//  public static String SENT_BATCHED_CACM_CARDS_STATUS = "S";
+//  public static String CONFIRMED_BATCHED_CACM_CARDS_STATUS = "C";
+//  public static String CACM_STATUS_IN_PROGRESS = "I";
+//  public static String CACM_STATUS_FAILED = "F";
+//  public static String CACM_STATUS_COMPLETED = "C";
+//  public static String CACM_FILE_DEFAULT_COUNTS = "0";
+//  public static String CACM_FILE_EXCEPTION_MESSAGE_DELIMETER = ":";
+//  public static String SHELL_SCRIPT_COMMAND = "";
+//
+//  public static String ASTERISK_VALUE = "*";
+//  public static String ADD_RECORD_TYPE = "A";
+//  public static String DELETE_RECORD_TYPE = "D";
+//  public static String CHANGE_RECORD_TYPE = "C";
+//  public static String FULL_REFRESH_RECORD_TYPE = "F";
+//
+//  public static String FILE_HEADER_PARTIAL_REFRESH = "1";
+//  public static String FILE_HEADER_FULL_REFRESH = "0";
+//
+//  public static String FILE_HEADER_RECORD_TYPE = "FH";
+//  public static String BATCH_HEADER_RECORD_TYPE = "BH";
+//  public static String BATCH_TRAILOR_RECORD_TYPE = "BT";
+//  public static String FILE_TRAILOR_RECORD_TYPE = "FT";
+
+  //Detail
+//  public static String DETAIL_CACM_DATE_REISSUE_EXP_DATE = "";
+
+//  public static final String SUBMIT = "Submit";
+//  public static final String USER_OBJECT = "userobj";
+//  public static final String USERID = "userid";
+//  public static final String REQUEST_PARAM_NAME = "request";
+//  public static final String REQUEST_LOGOUT = "LOGOUT";
+//  public static final String REQUEST_SOURCE_NAME = "source";
+
+  //Transaction CardsConstants
+//  public static final String REQUEST_SEARCH = "SRHPROD"; // "req_search";
+//  public static final String REQUEST_PROD_INFO = "PRDINFO";
+//  public static final String MANAGER_ROLE = "MNG";
+//  public static final String CLERK_ROLE = "CLK";
+
+//  public static final String SESSION_MONITOR = "timeout";
+//  public static final int DEFAULT_SECURITY = -1;
+//  public static final int VALID_USER = 0;
+//  public static final int INVALID_USER = 1;
+//  public static final int ACCESS_DENIED = 3;
+//  public static final int INVALID_SESSION = 4;
+//  public static final int INVALID_LOGIN = 5;
+//  public static final int ACCESS_GRANTED = 6;
+
+  //Variables for task operations
+//  public static final int TASK_ALL_ALLOW = 10;
+//  public static final int TASK_ACCESS_ALLOW = 11;
+//  public static final int TASK_INSERT_ALLOW = 12;
+//  public static final int TASK_DELETE_ALLOW = 13;
+//  public static final int TASK_EDIT_ALLOW = 14;
+//  public static final int TASK_VIEW_ALLOW = 15;
+
+  //Transaction Parameter
+//  public static final String REQUEST_VALUE_DELIMETER = "|";
+//  public static final String RESPONSE_VALUE_DELIMETER = "|";
+
+
+  //Varibles for the users status
+//  public static final String DELETE_USER = "2";
+//  public static final String DISABLE_USER = "1";
+//  public static final String ENABLE_USER = "0";
+//  public static final int MAX_TOPTEN = 10;
+//
+//  public static final String ALLOW_ACCESS = "1";
+//  public static final String DIS_ALLOW_ACCESS = "0";
+
+  // General use parameters
+  public static String IS_TRUE="Y";
+  public static String IS_FALSE="N";
+
+  public static final String YES_OPTION = "Y";
+  public static final String NO_OPTION = "N";
+
+  //Transaction FILE VARIABLES
+  public static String STATUS_TO_BE_SEND = "T";
+  public static String STATUS_SEND = "S";
+  public static String STATUS_IN_PROGRESS = "I";
+  public static String STATUS_FAILED = "F";
+  public static String STATUS_DONE = "D";
+
+  public static String OUTPUT_FILE_HTML = "H";
+  public static String OUTPUT_FILE_PDF = "P";
+  public static String OUTPUT_FILE_XML = "X";
+  public static String OUTPUT_FILE_CSV = "C";
+  public static String OUTPUT_FILE_XL = "E";
+  public static String OUTPUT_FILE_WORD = "W";
+
+  public static String NOTIFY_EMAIL = "E";
+  public static String NOTIFY_FAX = "F";
+  public static String NOTIFY_SMS = "S";
+
+// need close look
+  public static String REOCCURING_NONE_FLAG = "N";
+  public static String REOCCURING_DAILY_FLAG = "D";
+  public static String REOCCURING_WEEKLY_FLAG = "W";
+  public static String REOCCURING_MONTHLY_FLAG = "M";
+  public static String REOCCURING_QUATERLY_FLAG = "Q";
+  public static String REOCCURING_BI_YEARLY_FLAG = "B";
+  public static String REOCCURING_YEARLY_FLAG = "Y";
+
+  public static String EXTENSION_FILE_HTML = "html";
+  public static String EXTENSION_FILE_PDF = "pdf";
+  public static String EXTENSION_FILE_XML = "xml";
+  public static String EXTENSION_FILE_XL = "xls";
+  public static String EXTENSION_FILE_CSV = "csv";
+  public static String EXTENSION_FILE_WORD = "doc";
+
+  //Varibles for Report SchedularService
+//  public static String SERVICE_CONFIG_PATH = "";
+//  public static String SERVICE_CONFIG_FILE = "config.ini";
+//  public static long SERVICE_CONFIG_FILE_LAST_UPDATE;
+//  public static String SERVICE_INTERVAL = "60000";
+//  public static String SERVICE_DELAY = "60000";
+
+//Mail Settings
+  public static String REPORT_SAVE_PATH = "";
+  public static String REPORT_SERVER_URL = "";
+  public static String REPORT_FILE_TITLE = "Report ";
+  public static String SOURCE_INSTANCE_NAME = "instName";
+  public static String MAIL_REPORT_MESSAGE = "";
+  public static String MAIL_REPORT_ATTACH_MESSAGE = "";
+  public static String MAIL_REPORT_FOOTER_MESSAGE = "";
+  public static String MAIL_REPORT_SUBJECT = "";
+  //Report Admin message
+  public static String MAIL_REPORT_ADMIN_MESSAGE = "";
+  public static String MAIL_REPORT_ADMIN_SUBJECT = "";
+
+  // Email configration constants
+  public static String MAIL_SMTP = null;
+  public static String MAIL_REPORT_FROM = null;
+  public static String MAIL_REPORT_ADMIN = null;
+  public static String MAIL_REPORT_TO = null;
+  public static String MAIL_REPORT_CC = null;
+  public static String MAIL_REPORT_BCC = null;
+  public static String DEFAULT_DELIMETER_STRING = ",";
+  public static String MAIL_DELIMETER_STRING = "|";
+  public static String MAIL_MSG_DELIMETER_STRING = "#";
+  public static String ATTCH_MSG_DELIMETER_STRING = "@";
+  public static String MAIL_ATTCH_MSG_1 = " and is being sent as an attachment with this email";
+  public static String MAIL_ATTCH_MSG_2 = "also ";
+  public static  long MAX_ACTIVE_THREADS = 0;
+  public static  long MAX_REPORT_RETRY = 5;
+
+  // Admin email parameters
+  public static  long START_REPORT_FAILURE_EMAIL = 5;
+  public static  long START_FAILURE_EMAIL = 0;
+  public static  long MAX_EMAIL_RETRY = 5;
+
+// -------------BPScheduler Attributes-------------
+
+  public static String USE_BILL_PAYMENT_PAYEE_PROCESSING="USE_BILL_PAYMENT_PAYEE_PROCESSING";
+  public static String USE_BILL_PAYMENT_PROCESSING="USE_BILL_PAYMENT_PROCESSING";
+  public static String USE_BILL_RESPONSE_PROCESSING="USE_BILL_RESPONSE_PROCESSING";
+  public static String USE_BILL_ADJUSTMENT_PROCESSING="USE_BILL_ADJUSTMENT_PROCESSING";
+
+//-------important-----------Transfer Service Verfiy Counter-------------------------//
+
+  public static int VERFIY_DB_COUNTER = 0;
+  public static String ALLOWED_INSTANCES = "";
+  public static String CONNECTION_FILE_PATH = "";
+  public static String HSM_IP = "";
+  public static int HSM_PORT = -1;
+  public static int HSM_INDEX = -1;
+
+// Output path for CHAuthService
+  public static String OUTPUT_PATH="";
+//  public static String ACH_BATCH_CONFIG_LOG_FOLDER="services_ach_batch_config";
+//  public static String ACH_BATCH_CONFIG_OUTPUT_PATH = null;
+//  public static String INTL_FIS_CONFIG_OUTPUT_PATH = null;
+//  public static String ACH_LOAD_BATCH_RETURN_LOG_FOLDER="services_ach_lod_ret";
+//  public static String INT_FIS_LOG_FOLDER="int_fis_service";
+
+  public static String RESPONSE_SRV_LOG_FOLDER="services_";
+
+  //************************* Output path for BP Service ********************
+  public static String UPLOAD_FOLDER = "Upload";
+  public static String DOWNLOAD_FOLDER = "Download";
+  public static String PROCESSED_FOLDER = "Processed";
+  public static String SENT_FOLDER = "Sent";
+  public static String ENCRYPT_FOLDER = "Encrypt";
+  public static String DECRYPT_FOLDER = "Decrypt";
+
+  public static String PAYEE_OUTPUT_PATH = null;
+  public static String PAYMENT_OUTPUT_PATH = null;
+  public static String RESPONSE_OUTPUT_PATH = null;
+  public static String ADJUSTMENT_OUTPUT_PATH = null;
+  public static String VERIFY_PUBLIC_KEY_PATH = null;
+  public static String ENCRYPT_PUBLIC_KEY_PATH = null;
+  public static String SECRET_KEY_PATH = null;
+  public static String PASS_PHRASE = null;
+  public static String RESPONSE_INFILE_PREFIX = null;
+  public static String ADJUSTMENT_INFILE_PREFIX = null;
+  public static String RES_DECRYPT_INFILE_NAME = null;
+  public static String ADJ_DECRYPT_INFILE_NAME = null;
+
+// need discussion**********************************
+  private static long CURRENT_ACTIVE_THREADS = 0;
+
+  public static synchronized long getActiveThreads(){
+    return CURRENT_ACTIVE_THREADS;
+  }
+  public static synchronized void setActiveThreads(long value){
+  CURRENT_ACTIVE_THREADS = value;
+  }
+
+  private static long CURRENT_ACTIVE_ACH_THREADS = 0;
+
+  public static synchronized long getActiveACHThreads(){
+    return CURRENT_ACTIVE_ACH_THREADS;
+  }
+  public static synchronized void setActiveACHThreads(long value){
+    CURRENT_ACTIVE_ACH_THREADS = value;
+  }
+
+//--------------CHAuthService Active Threads----------------------//
+//  private static long CURRENT_ACTIVE_CHAUTH_THREADS = 0;
+//
+//  public static synchronized long getActiveCHAUTHThreads(){
+//    return CURRENT_ACTIVE_CHAUTH_THREADS;
+//  }
+//  public static synchronized void setActiveCHAUTHThreads(long value){
+//    CURRENT_ACTIVE_CHAUTH_THREADS = value;
+//  }
+
+  public static  long INCREAMENT_EMAIL_COUNTER = 10;
+//  public static  long ACH_INCREAMENT_EMAIL_COUNTER = 10;
+//  public static  long EOD_INCREAMENT_EMAIL_COUNTER = 10;
+//  public static  long CHAUTH_INCREAMENT_EMAIL_COUNTER = 10;
+
+  public static  long MAX_LIMIT_SEND_EMAIL_COUNTER = 3;
+//  public static  long ACH_MAX_LIMIT_SEND_EMAIL_COUNTER = 3;
+//  public static  long EOD_MAX_LIMIT_SEND_EMAIL_COUNTER = 3;
+//  public static  long CHAUTH_MAX_LIMIT_SEND_EMAIL_COUNTER = 3;
+
+  public static  long CURRENT_SEND_EMAIL_COUNTER = 0;
+//  public static  long ACH_CURRENT_SEND_EMAIL_COUNTER = 0;
+//  public static  long EOD_CURRENT_SEND_EMAIL_COUNTER = 0;
+//  public static  long CHAUTH_CURRENT_SEND_EMAIL_COUNTER = 0;
+
+//******************** BP sleep times *********************
+  public static long DEFAULT_WAIT_TIME = 3600000;
+  public static long DEFAULT_SLEEP_TIME = 60000;
+
+
+  public static long PAYEE_SLEEP_TIME = 60000;
+  public static long PAYMENT_SLEEP_TIME = 60000;
+  public static long RESPONSE_SLEEP_TIME = 60000;
+  public static long ADJUSTMENT_SLEEP_TIME = 60000;
+
+// use for email
+  public static String SMS_CHANNEL = "SMS";
+  public static String EMAIL_CHANNEL = "Email";
+
+// alerts
+//  public static String BT_ALERT = "BT";
+//  public static String CP_ALERT = "CP";
+//  public static String DP_ALERT = "DP";
+
+  public static String EMAIL_BT_ALERT_VM = "balancethrshold_email.vm";
+  public static String EMAIL_CP_ALERT_VM = "creditpost_email.vm";
+  public static String EMAIL_DP_ALERT_VM = "debitpost_email.vm";
+
+  public static String SMS_BT_ALERT_VM = "balancethrshold_sms.vm";
+  public static String SMS_CP_ALERT_VM = "creditpost_sms.vm";
+  public static String SMS_DP_ALERT_VM = "debitpost_sms.vm";
+
+
+// Report Scheduler
+//  public static String CARD_DIRCTV = "cardNumber";
+//  public static String OPERATOR_DIRCTV = "operator";
+//  public static String LIMIT_DIRCTV = "limit";
+//  public static String CARD_BAL_DIRCTV = "cardBalance";
+//  public static String TAN_DIRCTV = "tan";
+//  public static String DATE_TIME_DIRCTV = "dateTime";
+//  public static String AMOUNT_DIRCTV = "amount";
+//  public static String DESC_DIRCTV = "desc";
+//  public static String FTR_DIRCTV = "footer";
+
+//  public static String RPRT_NAME_DIRCTV = "reportName";
+//  public static String RPRT_NO_DIRCTV = "reportSchNo";
+//  public static String ADMIN_URL_DIRCTV = "adminSiteURL";
+
+//  public static String RPRT_NONATTCH_VM = "schreport_nonattach.vm";
+//  public static String RPRT_ATTCH_VM = "schreport_attach.vm";
+
+//  public static String ALERT_OPRTR_GRTR = "G";
+//  public static String ALERT_OPRTR_LESS = "L";
+
+
+  public static String DB_CONNECTION_STRING = "";
+  public static String DB_USER_NAME = "";
+  public static String DB_USER_PASSWORD = "";
+  public static String DB_DRIVER_NAME = "";
+
+  // configration File name
+  public static String CONFIGURATION_FILE = "config.ini";
+
+  //Varibles for the Log File
+  public static String LOG_FILE_PATH = "";
+  public static String LOG_FILE_NAME = "";
+  public static String LOG_CONTEXT_NAME = "com.i2c.billpaymentschedularservice";
+
+  public static int LOG_FILE_SIZE = 0;
+  public static int LOG_FILE_NO = 0;
+  public static int LOG_DEBUG_LEVEL = 2;
+  public static int LOG_SEVERE = 1;
+  public static int LOG_WARNING = 2;
+  public static int LOG_INFO = 3;
+  public static int LOG_CONFIG = 4;
+  public static int LOG_FINE = 5;
+  public static int LOG_FINER = 6;
+  public static int LOG_FINEST = 7;
+
+  public static int START_POWER_FACTOR = 0;
+//  public static int ACH_START_POWER_FACTOR = 0;
+//  public static int EOD_START_POWER_FACTOR = 0;
+//  public static int CHAUTH_START_POWER_FACTOR = 0;
+
+//  private static int CURRENT_FAIL_COUNTER = 0;
+//  private static StringBuffer FAILED_REPORTS = new StringBuffer();
+
+
+  //***************************************************************//
+  public static String ALERT_EMAIL_HDR = "Dear Administrator,";
+  public static String ALERT_EMAIL_MSG = "# Bill Payment Monitor Thread has detected some problem in the execution of # at <#> instance. The # is not responding since # minutes.";
+  public static String ALERT_EMAIL_SUBJECT = "MCP Bill Payment Scheduler Service Monitoring Alert";
+  public static long DEFAULT_ALERT_TIME = 60;
+  public static long MONITOR_SERVICE_SLEEP_TIME = 60;
+  //***************************************************************//
+
+//  public static String ALERT_EMAIL_HDR = "Dear Administrator,";
+//  public static String ALERT_EMAIL_MSG = "# Bill Payment Monitor Thread has detected some problem in the execution of # at <#> instance. The # is not responding since # minutes.";
+  public static String RESADJ_FAIL_EMAIL_SUBJECT = "MCP Bill Payment Scheduler Service Monitoring Alert";
+//  public static long DEFAULT_ALERT_TIME = 60;
+//  public static long MONITOR_SERVICE_SLEEP_TIME = 60;
+  //***************************************************************//
+
+//  public static synchronized void setReportFailedCounter(int counter){
+//    CURRENT_FAIL_COUNTER = counter;
+//  }//end methid
+//
+//  public static synchronized void clearReportFailedCounter(){
+//    CURRENT_FAIL_COUNTER = 0;
+//}//end methid
+//
+//  public static synchronized int getReportFailedCounter(){
+//    return CURRENT_FAIL_COUNTER ;
+//  }//end methid
+//
+//  public static synchronized void addFailedReport(String reportID){
+//    FAILED_REPORTS.append(reportID+ " \n");
+//  }//end methid
+//
+//  public static synchronized String getFailedReport(){
+//    return FAILED_REPORTS.toString();
+//  }//end methid
+//
+//
+//  private static int CURRENT_ACH_FAIL_COUNTER = 0;
+//  public static synchronized void setACHFailedCounter(int counter){
+//    CURRENT_ACH_FAIL_COUNTER = counter;
+//  }//end methid
+//
+//  public static synchronized void clearACHFailedCounter(){
+//    CURRENT_ACH_FAIL_COUNTER = 0;
+//}//end methid
+//
+//  public static synchronized int getACHFailedCounter(){
+//    return CURRENT_ACH_FAIL_COUNTER ;
+//  }//end methid
+//
+//
+//  private static int CURRENT_EOD_FAIL_COUNTER = 0;
+//  public static synchronized void setEODFailedCounter(int counter){
+//    CURRENT_EOD_FAIL_COUNTER = counter;
+//  }//end methid
+//
+//  public static synchronized void clearEODFailedCounter(){
+//    CURRENT_EOD_FAIL_COUNTER = 0;
+//}//end methid
+//
+//  public static synchronized int getEODFailedCounter(){
+//    return CURRENT_EOD_FAIL_COUNTER ;
+//  }//end methid
+
+//--------------------CHAUTHService-------------------//
+//  private static int CURRENT_CHAUTH_FAIL_COUNTER = 0;
+//  public static synchronized void setCHAUTHFailedCounter(int counter) {
+//    CURRENT_CHAUTH_FAIL_COUNTER = counter;
+//  } //end methid
+//
+//  public static synchronized void clearCHAUTHFailedCounter() {
+//    CURRENT_CHAUTH_FAIL_COUNTER = 0;
+//  } //end methid
+//
+//  public static synchronized int getCHAUTHFailedCounter() {
+//    return CURRENT_CHAUTH_FAIL_COUNTER;
+//  } //end methid
+
+//  public static synchronized void clearFailedReport(){
+//    FAILED_REPORTS.delete(0,FAILED_REPORTS.length());
+//  }//end methid
+
+//  public static synchronized void deleteFailedReport(String reportInfo){
+//    System.out.println("Before Delete Report Info-->"+reportInfo+"<-- Existing Info -->"+FAILED_REPORTS);
+//    if (reportInfo != null && reportInfo.trim().length() > 0)
+//      FAILED_REPORTS.replace(FAILED_REPORTS.indexOf(reportInfo),FAILED_REPORTS.indexOf(reportInfo) + reportInfo.length(),"");
+//    System.out.println("After Delete Report Info-->"+reportInfo+"<-- Existing Info -->"+FAILED_REPORTS);
+//  }//end method
+
+  public static int PORT_NUMBER = -1;
+  private static String MACHINE_IP = null;
+  public static synchronized String getMachineIP() {
+    return MACHINE_IP;
+  }
+  public static synchronized void setMachineIP() {
+    try {
+      java.net.InetAddress machine_ip = java.net.InetAddress.getLocalHost();
+      Constants.MACHINE_IP = machine_ip.getHostAddress();
+    }
+    catch (java.net.UnknownHostException uhe) {
+      System.err.println("Exception during getting Machine IP address in Contants.setMachineIP");
+      uhe.printStackTrace();
+    }
+  }
+}

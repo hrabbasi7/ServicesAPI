@@ -1,0 +1,214 @@
+package com.i2c.service.billpaymentschedularservice.FTPService;
+
+import com.enterprisedt.net.ftp.FTPClient;
+import com.enterprisedt.net.ftp.FTPMessageCollector;
+import com.enterprisedt.net.ftp.FTPTransferType;
+import com.enterprisedt.net.ftp.FTPConnectMode;
+import com.enterprisedt.util.debug.Level;
+import com.enterprisedt.util.debug.Logger;
+
+import java.io.*;
+import java.util.ArrayList;
+
+import com.i2c.service.util.Constants;
+import com.i2c.service.util.CommonUtilities;
+import com.enterprisedt.net.ftp.*;
+
+/**
+ *
+ * @author Haroon ur Rashid Abbasi
+ * Created @ Sep 18, 2005 11:22:09 AM
+ * @
+ */
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class edtFTP {
+
+  private FTPClient ftp = null;
+//  private FtpConnect con = null;
+//  private Ftp ftp = null;
+  private String ftpAddress = null;
+  private int ftpPort = -1;
+  private String ftpUser = null;
+  private String ftpPassword = null;
+  private String ftpPath = null;
+
+  public edtFTP() {
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:22:53 AM
+   *
+   */
+
+  private edtFTP(String ftpAddress, int ftpPort, String ftpUser,
+                 String ftpPassword, String ftpPath) {
+    this.ftpAddress = ftpAddress;
+    this.ftpPort = ftpPort;
+    this.ftpUser = ftpUser;
+    this.ftpPassword = ftpPassword;
+    this.ftpPath = ftpPath;
+
+  }
+
+  public edtFTP(FTPInfoVO ftpVo) {
+    this.ftpAddress = ftpVo.getFtpAddress();
+    this.ftpPort = ftpVo.getFtpPort();
+    this.ftpUser = ftpVo.getFtpUserId();
+    this.ftpPassword = ftpVo.getFtpPassword();
+    this.ftpPath = ftpVo.getFtpRemotePath();
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:23:11 AM
+   * @param ftpAddress
+   * @param ftpPort
+   * @param strUser
+   * @param strPassword
+   * @return
+   * @throws IOException
+   */
+  public boolean connect() throws IOException, Exception {
+    boolean istrue = false;
+    try {
+      // set up client
+      ftp = new FTPClient();
+      ftp.setRemoteHost(ftpAddress);
+      ftp.setRemotePort(ftpPort);
+
+      FTPMessageCollector listener = new FTPMessageCollector();
+      ftp.setMessageListener(listener);
+      //ftp.setAutoPassiveIPSubstitution(true);
+
+      // connect
+      System.out.println("Connecting");
+      ftp.connect();
+
+      System.out.println("****FTP Connection successfull*****");
+      //				APPLogger.logger.info("exit :FTP Connection successfull.");
+//      if ((ftpUser == null || ftpUser != "") && (ftpPassword == null || ftpPassword != "")) {
+        ftp.login(ftpUser, ftpPassword);
+//      }
+      // set up passive ASCII transfers
+      System.out.println("Setting up passive, ASCII transfers");
+      ftp.setConnectMode(FTPConnectMode.PASV);
+      ftp.setType(FTPTransferType.ASCII);
+
+      if (ftpPath == null || ftpPath != "") {
+        ftp.chdir(ftpPath);
+      }
+      istrue = true;
+    }
+    catch (Exception ex) {
+      System.out.println("****FTP Connection FAILED*****" +
+                         "\nException:FTP Connection FAILED. due to Net Work Problem: Connect @JFTP");
+      ex.printStackTrace();
+      throw ex;
+    }
+    return istrue;
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:23:25 AM
+   *
+   */
+  public void disconnect() {
+    if (ftp != null) {
+      System.out.println("Quitting client");
+      try {
+        ftp.quit();
+      }
+      catch (FTPException ex) {
+        ex.printStackTrace();
+      }
+      catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+    System.out.println("Disconnect Successful.");
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:24:18 AM
+   * @param strPath
+   * @return
+   * @throws IOException
+   */
+  public boolean upload(String ftpFileName, String localPath) throws Exception {
+    boolean isUploaded = false;
+    System.out.println("Upload File @FTP");
+    // check if connected
+    if (ftp == null) {
+      return isUploaded;
+    }
+
+    if (!ftp.connected()){
+      return isUploaded;
+    }
+    try{
+      // copy file to server
+      System.out.println("Putting file at : " + ftp.pwd());
+      ftp.put(localPath, ftpFileName);
+      isUploaded = true;
+    }
+    catch (Exception e) {
+      System.out.println("General exception = " + e);
+      isUploaded = false;
+      throw e;
+    }
+  return isUploaded;
+}
+
+
+/**
+ *
+ * @author Haroon ur Rashid Abbasi
+ * Created @ Sep 18, 2005 11:25:53 AM
+ * @param strFile
+ * @return
+ * @throws IOException
+ */
+public boolean download(String ftpFileName, String localPath) throws Exception {
+  boolean isDownloaded = false;
+   System.out.println("Download File @FTP");
+   // check if connected
+   if (ftp == null) {
+     return isDownloaded;
+   }
+
+   if (!ftp.connected()){
+     return isDownloaded;
+   }
+   try{
+     // copy file from server
+     System.out.println("Downloading file at : " + ftp.pwd());
+     ftp.get(localPath, ftpFileName);
+     isDownloaded = true;
+   }
+   catch (Exception e) {
+     System.out.println("General exception = " + e);
+     isDownloaded = false;
+     throw e;
+   }
+   return isDownloaded;
+
+ }
+}

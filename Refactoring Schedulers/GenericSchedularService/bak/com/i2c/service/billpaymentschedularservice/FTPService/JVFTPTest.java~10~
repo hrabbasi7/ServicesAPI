@@ -1,0 +1,47 @@
+package com.i2c.service.billpaymentschedularservice.FTPService;
+
+//import com.i2c.billpaymentschedularservice.*;
+import java.io.*;
+import cz.dhl.ftp.FtpFile;
+import cz.dhl.io.LocalFile;
+import cz.dhl.ftp.Ftp;
+import cz.dhl.io.CoFile;
+import cz.dhl.io.CoLoad;
+import cz.dhl.ftp.FtpConnect;
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2006</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class JVFTPTest {
+    public JVFTPTest() {
+    }
+
+    public static void main(String[] args) {
+//        JFtp ftp = new JFtp("ftp://192.168.0.226", "21", "habbasi", "habbasi");
+//      JFtp ftp = new JFtp();
+      I2cFTP ftp = new I2cFTP("192.168.0.226", "21", "habbasi",
+                              "habbasi","/home/habbasi");
+
+        try {
+
+              ftp.connect();
+
+//            ftp.download("epiclist.ra.mask.childid.xml");
+            ftp.upload("D:\\Haroon\\Test\\","abc.txt");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }catch (Exception ex1) {
+          ex1.printStackTrace();
+            }
+
+    }
+}

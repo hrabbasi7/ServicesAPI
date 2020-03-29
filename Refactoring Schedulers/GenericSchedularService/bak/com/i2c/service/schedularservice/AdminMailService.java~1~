@@ -1,0 +1,79 @@
+package com.i2c.service.schedularservice;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.i2c.service.util.*;
+import com.i2c.service.schedularservice.*;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class AdminMailService extends Thread {
+  String message = null;
+  String subject = null;
+  String toEmails = Constants.MAIL_REPORT_ADMIN;
+  String fromEmail = Constants.MAIL_REPORT_ADMIN;
+  //Main Constructor
+  public AdminMailService(String _message,String _subject) {
+    message = _message;
+    subject = _subject;
+    CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_FINEST)," Admin Mail Send Constructor Message -->"+message+"<--- Subject -->"+subject);
+  }//end constrcutor
+
+//Main Constructor
+  public AdminMailService(String _message,String _subject,String toEmailAddresses, String fromAddress) {
+    message = _message;
+    subject = _subject;
+    toEmails = toEmailAddresses;
+    fromEmail = fromAddress;
+    CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_FINEST)," Admin Mail Send Constructor Message -->"+message+"<--- Subject -->"+subject+"<--- toEmails -->"+toEmails+"<--- fromEmail -->"+fromEmail);
+  }//end constrcutor
+
+
+  public void run() {
+    CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_FINEST)," Admin Mail Service Thread is Started Report -->"+message);
+    try {
+        for (int i = 0; i < Constants.MAX_EMAIL_RETRY; ++i) {
+          CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_FINEST),"<--- Maximum  Email Retry -->"+i);
+          if (sendAdminReportFailedEmail()) {
+            CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_FINEST),"<--- Success Email Send Clear Things -->");
+            break;
+          }//end if
+        }//end for
+    } catch (Exception ex) {
+      CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Admin Serive Thread -->"+ex);
+    }//end catch
+  }//end run
+
+  /**
+   * Method for sending an email to admin
+   * @return: true of false;
+   */
+  private boolean sendAdminReportFailedEmail(){
+    boolean flag = true;
+    ServiceMail mailObj = null;
+    try {
+      mailObj = new ServiceMail();
+      CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_WARNING)," Send Admin Email Method-->"+message+"<-- Subject -->"+subject+"<--- toEmails -->"+toEmails);
+
+      //Setting the From Email Address
+      mailObj.setFrom(fromEmail);
+      mailObj.setMessage(message);
+      mailObj.setRecipientsTO(CommonUtilities.convertStringArray(toEmails,Constants.DEFAULT_DELIMETER_STRING));
+      mailObj.setSMTPServer(Constants.MAIL_SMTP);
+      mailObj.setSubject(subject);
+      //Send an Email
+      mailObj.postMail();
+    } catch (Exception ex) {
+      CommonUtilities.getLogger().log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Send Admin Email -->"+ex);
+      flag = false;
+    }//end catch
+    return flag;
+  }//end send admin email
+}//end class

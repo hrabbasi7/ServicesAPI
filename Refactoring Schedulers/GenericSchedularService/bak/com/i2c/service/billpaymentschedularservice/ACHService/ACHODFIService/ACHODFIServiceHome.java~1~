@@ -1,0 +1,492 @@
+package com.i2c.service.schedularservice.ACHService.ACHODFIService;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.i2c.service.util.*;
+import com.i2c.service.base.*;
+import java.sql.*;
+import com.i2c.transferapi.*;
+import com.i2c.service.excep.*;
+import com.i2c.service.schedularservice.ACHService.*;
+import com.i2c.ach.jobs.*;
+import com.i2c.ach.framework.*;
+import com.i2c.sftp.*;
+import com.i2c.service.schedularservice.*;
+
+//import com
+
+import com.i2c.service.schedularservice.ACHService.ACHFTPSService.ACHFTPSHandler;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHODFIServiceHome extends BaseHome {
+  String instanceName = null;
+  ACHInfoObj achObj = null;
+  /**
+   * Main Constructor
+   * @param instance
+   */
+  public ACHODFIServiceHome(String _instance, ACHInfoObj _infoObj) {
+    instanceName = _instance;
+    achObj = _infoObj;
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        "ACHODFIServiceHome Setting the Instance Name -->" + instanceName +
+                                    "<--- ODFI Schduled Date Time -->" +
+                                    achObj.getScheduledDateTime() +
+                                    "<--- ODFI -->" + achObj.getScheduledODFI());
+  } //end constructor
+
+  /**
+   * Method for processing the Recurring ACH ODFI Transactions
+   * @param dbConn: connection for processing
+   * @throws ProcessValuesExcep
+   */
+  private void processRecurringACH(Connection dbConn) throws ProcessValuesExcep {
+    StringBuffer query = new StringBuffer();
+    CallableStatement cs = null;
+    ResultSet rs = null;
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " Process Recurring ODFI ACH Transaction instanceName -->" +
+                                      instanceName +
+                                      "<--- ODFI Schduled Date Time -->" +
+                                      achObj.getScheduledDateTime() +
+                                      "<--- ODFI -->" + achObj.getScheduledODFI());
+      //Calling API for Processing Recurring Tranaction
+      cs = dbConn.prepareCall("{call process_rec_achs(?)}");
+      //Setting the Scheduled Recurring Transfer
+      cs.setString(1, achObj.getScheduledDateTime());
+      //Excuting the ACH Processing
+      cs.execute();
+      //Getting the Response of the Recurrring ACH Transaction Processing API
+      // while (rs.next()) {}
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Process Recurring ODFI ACH Transaction -->" + ex);
+      throw new ProcessValuesExcep( -1,
+          "Exception in Process Recurring ODFI ACH Transaction -->" + ex);
+    }
+    finally {
+      try {
+        if (rs != null)
+          rs.close();
+        if (cs != null)
+          cs.close();
+      }
+      catch (Exception ex) {}
+    } //end finally
+  } //end method
+
+  /**
+   * Method for process the ACH Transactions
+   * @return: able to perform the operation
+   */
+  public void processACHODFITransactions(Connection dbConn) throws ProcessValuesExcep,ProcessValuesWarn {
+    //Commented by Agohar
+    //Connection fcDbConn = null;
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " Method processACHODFITransactions ---instanceName-->" + instanceName + "<--- ODFI Schduled Date Time -->" + achObj.getScheduledDateTime() + "<--- ODFI -->" + achObj.getScheduledODFI());
+    try
+    {
+      //Commented by Agohar
+//      fcDbConn = DatabaseHandler.getFCConnection("ACHODFIServiceHome",
+//                                                 instanceName);
+      //Process Recurring ACHS
+      processRecurringACH(dbConn);
+      //Load the Transer Transactions
+//      Vector achFilesList = processScheduledACHInformation(dbConn, achObj, fcDbConn);
+      //Changed the Call by Agohar
+      Vector achFilesList = processScheduledACHInformation(dbConn, achObj);
+
+      //Checking if there is any error message
+      checkACHWarningInformation(achFilesList,dbConn);
+
+//-------------------------Upload Process ACH files---------------------------//
+      if(achFilesList != null && achFilesList.size() >= 2)
+      {
+        ACHFTPSHandler handler = new ACHFTPSHandler(achObj,achFilesList,instanceName,dbConn);
+        handler.uploadFiles();
+      }else{
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG), "--- No ACH Files generated today, Nothing to upload ---");
+      }
+
+//      uploadProcessedACHFiles(achFilesList,dbConn);
+
+    }
+    catch (Exception ex)
+    {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING), " Exception in Process ACH ODFI Transaction  -->" + ex);
+      throw new ProcessValuesExcep( -1, "Exception in Process ACH ODFI Transaction -->" + ex);
+    }
+  } //end update report status
+
+  /**
+   * Method for checking the warning the ACH processing transaction
+   * @param achFilesList: list containing the processed ACH and the list
+   * @throws ProcessValuesExcep
+   */
+  public void checkACHWarningInformation(Vector achFilesList,Connection dbConn)  throws ProcessValuesExcep,ProcessValuesWarn {
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        "Method for Checking the ACH Warning Message achFilesList -->"+achFilesList);
+
+       //Checking if there is any wanring message
+      if (achFilesList != null && achFilesList.size() > 0 ) {
+        String warningMessage = achFilesList.elementAt((achFilesList.size() -1)).toString();
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          "Warning Message GOT -->"+warningMessage);
+
+        //Throw exception if there are warning avialable
+        if (warningMessage != null && warningMessage.trim().length() > 0)
+        {
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),"ProcessValuesWarn---> Warning Messages in Processing ODFI ACH Thread -->"+warningMessage);
+          //ACHStatusMailer.updateFailedACHInfo(Constants.MAIL_ACH_ADMIN_MESSAGE +"\n\nInstance Name: "+instanceName+"\n\nMachine IP: "+Constants.getMachineIP()+"\n\nWarning Description : "+ warningMessage + "\n\n\n " + Constants.MAIL_FORWARD_MESSAGE,Constants.MAIL_ACH_ADMIN_SUBJECT,instanceName);
+          ACHStatusMailer.updateFailedACHInfo(warningMessage,null,instanceName,true, Constants.ACH_WARNING,dbConn);
+        }else{
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+              "Method for Checking the ACH Warning Message --- Empty Warning message -->"+warningMessage);
+        }
+      }else{
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+            "Method for Checking the ACH Warning Message --- No records received -->"+achFilesList.size());
+      }
+    }
+//    catch (ProcessValuesWarn pvw)
+//    {
+//      throw new ProcessValuesWarn( -1, pvw.toString());
+//    }
+    catch (Exception ex)
+    {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Checking ACH Warning Information  -->" + ex);
+      throw new ProcessValuesExcep( -1,"Exception in Checking ACH Warning Information -->" + ex);
+    }//end catch
+  }//end method
+
+  /**
+   * Method for uploading the processed ACH files onto the SFTP server
+   * @param achFilesList: list containing the Processed ACH files
+   * @param dbConn: connection for the database operations
+   * @throws ProcessValuesExcep
+   */
+  public void uploadProcessedACHFiles(Vector achFilesList,Connection dbConn) throws
+      ProcessValuesExcep {
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " Method for uploading the processed ACH files achFilesList -->" +
+                                      achFilesList);
+      if (achFilesList != null) {
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+            " Upload Processed ACH files List size -->" + achFilesList.size());
+        for (int i = 0; i < achFilesList.size() -1 ; ++i) {
+          FileStatisticsObj fileStatics = (FileStatisticsObj) achFilesList.
+              elementAt(i);
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.
+              LOG_FINEST), i + "  --- File Statics Object --->" + fileStatics);
+          if (fileStatics != null) {
+            CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.
+                LOG_FINEST),
+                i + " GOT FIle Information ID --> " + fileStatics.getFileId() +
+                               "<- File Path ->" + fileStatics.getFilePath()
+                               + "<- getOdfiRoutingNo ->" +
+                               fileStatics.getOdfiRoutingNo() +
+                               "<- getOriginId ->" + fileStatics.getOriginId() +
+                               "<- getTotalBatches ->" +
+                               fileStatics.getTotalBatches()
+                               + "<- getTotalCrAmount ->" +
+                               fileStatics.getTotalCrAmount() +
+                               "<- getTotalDrAmount ->" +
+                               fileStatics.getTotalDrAmount());
+
+            //Method for loading the SFTP information for the ODFI
+//            ODFISFTPInfoObj sftpObj = loadODFISFTPInformation(fileStatics,dbConn);
+//            CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),i + " SFTP Object for the ODFI -->"+sftpObj);
+
+//            //Method for uploading the file to the SFTP site
+//            if (sftpObj != null){
+//              //Calling method for loading the files onto the SFTP server
+//              if (uploadSFTPFile(sftpObj, fileStatics))
+//                //Method for sending the Mail to the ACH administrators
+//                sendNotificationEmail(sftpObj, fileStatics);
+//                //Calling method for moving the ACH processed files into another folder
+//                moveProcessedACHFile(sftpObj, fileStatics);
+//            }//end sftp object null condition
+
+          } //end if
+        } //end loop
+      } //end if
+    } catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Uploading Processed ACH files -->" + ex);
+      throw new ProcessValuesExcep( -1,
+          "Exception in Uploading Processed ACH files  -->" + ex);
+    } //end catch
+  } //end method
+
+  /**
+   * Method for sending the emails to the Administrators
+   * @param sftpObj: object containing the ODFI related information
+   * @param fileStatics: object containing the statistics information
+   */
+//  public void sendNotificationEmail(ODFISFTPInfoObj sftpObj,FileStatisticsObj fileStatics)
+//      throws ProcessValuesExcep {
+//    StringBuffer message = new StringBuffer();
+//    StringBuffer subject = new StringBuffer();
+//    try {
+//
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+//          " Method for Sending Notification Emails Adreess --->" +sftpObj.getNotifyEmailAddress()+
+//          " Total Batch -->"+fileStatics.getTotalBatches()+"<-- Total Credit Amount -->"+fileStatics.getTotalCrAmount()+"<-- Total Debit Amount -->"+fileStatics.getTotalDrAmount());
+//
+//      String date = CommonUtilities.getCurrentFormatDate(Constants.ACH_DATE_FORMAT);
+//      String fileName = fileStatics.getFilePath().substring((fileStatics.getFilePath().lastIndexOf(File.separator) + 1),fileStatics.getFilePath().length());
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calculated File Name -->"+fileName+"<-- date -->"+date);
+//
+//      //Prepare the Email Message
+//      message.append(Constants.MAIL_NOTIFY_ACH_MESSAGE_START +" "+ date +" :\n\n\n");
+//      message.append(Constants.ACH_FILE_NAME + fileName + "\n");
+//      message.append(Constants.ACH_TOTAL_BATACH + fileStatics.getTotalBatches()+ "\n");
+//      message.append(Constants.ACH_TOTAL_CREDIT_AMOUNT + fileStatics.getTotalCrAmount()+ "\n");
+//      message.append(Constants.ACH_TOTAL_DEBIT_AMOUNT + fileStatics.getTotalDrAmount()+ "\n");
+//      message.append("\n\n" + Constants.MAIL_NOTIFY_ACH_MESSAGE_END);
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Final Message Prepared --->"+message.toString());
+//
+//      //Preapte the Subject
+//      subject.append(Constants.MAIL_NOTIFY_ACH_SUBJECT +" - "+ date +"  "+fileName);
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Final Subject Prepared -->"+subject.toString());
+//
+//      //Sending the Email to the Administrators
+//      AdminMailService adminEmail = new AdminMailService(message.toString(),subject.toString(),sftpObj.getNotifyEmailAddress());
+//      adminEmail.start();
+//      adminEmail.join();
+//
+//    } catch (Throwable ex){
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+//          " Exception in Sending Email Notification -->" + ex);
+//      throw new ProcessValuesExcep(-1,"Exception in Sending the ACH Notfication Emails   -->"+ex);
+//    }//end catch
+//  }//end method
+
+
+  /**
+   * Method for uploading the File onto the SFTP site
+   * @param sftpObj: object containting the SFTP server information
+   * @param fileStatics: object contiaining the file information
+   * @return: able to upload the file successfully or not
+   * @throws ProcessValuesExcep
+   */
+  public boolean uploadSFTPFile(ODFISFTPInfoObj sftpObj,FileStatisticsObj fileStatics)
+      throws ProcessValuesExcep {
+    boolean flag = false;
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Method for Uploading the file to the SFTP site sftpObj-->"+sftpObj+" File to be loaded -->"+fileStatics.getFilePath()+"<--- getSftpURL --->"+sftpObj.getSftpURL()
+                                      +"<--- getSftpUser --->"+sftpObj.getSftpUser()+"<--- getSftpPassword --->"+sftpObj.getSftpPassword()
+                                      +"<--- getSftpPath --->"+sftpObj.getSftpPath()+"<--- getFilePrefix --->"+sftpObj.getFilePrefix()
+                                      +"<--- getSftpPort --->"+sftpObj.getSftpPort()+"<--- getNotifyEmailAddress --->"+sftpObj.getNotifyEmailAddress());
+
+      String fileName = fileStatics.getFilePath().substring((fileStatics.getFilePath().lastIndexOf(File.separator) + 1),fileStatics.getFilePath().length());
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calculated File Name -->"+fileName);
+      //Calling the API for loading the file onto the SFTP sever
+      flag = SecureFileTransfer.putFile(sftpObj.getSftpURL(),Integer.parseInt(sftpObj.getSftpPort()),sftpObj.getSftpUser(),sftpObj.getSftpPassword(),sftpObj.getSftpPath()
+                                        ,fileName,"",fileStatics.getFilePath());
+    } catch (Exception ex){
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Uploading the file to the SFTP site -->"+ex);
+      throw new ProcessValuesExcep(-1,"Exception in Uploading the file to the SFTP site   -->"+ex);
+    }//end catch
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Flag value returned from SFTP API -->"+flag);
+    return flag;
+  }//end method
+
+  /**
+     * Method for moving the processed ACH file
+     * @param sftpObj: object containting the SFTP server information
+     * @param fileStatics: object contiaining the file information
+     * @return: able to upload the file successfully or not
+     * @throws ProcessValuesExcep
+     */
+    public boolean moveProcessedACHFile(ODFISFTPInfoObj sftpObj,FileStatisticsObj fileStatics)
+        throws ProcessValuesExcep {
+      boolean flag = false;
+      DbConnectionInfoObj connObj = null;
+      try {
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Method for Moving the file to the SFTP site sftpObj-->"+sftpObj+" ACH Processed File Path -->"+fileStatics.getFilePath()+"<--- File Prefix --->"+sftpObj.getFilePrefix());
+
+        connObj = (DbConnectionInfoObj)LoadProperties.instanceConnectionsTable.get(instanceName);
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance  -->"+instanceName+"<--- Instance Information Object -->"+connObj);
+        //Checking for the Mandatory Parameters
+        if (connObj == null || achObj.getScheduledODFI() == null || connObj.getServiceUserID() == null || connObj.getAchOutputPath() == null)
+          throw new ProcessValuesExcep(-1,"Mandatory Value is missing for calling the Generate ACH API ");
+
+         //Calling API for processing the scheduled ACH
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance Information GOT -- Istance Name -->"+connObj.getConnectionName()+"<--- ACH Output Path -->"+connObj.getAchOutputPath()+"<--- Service User ID -->"+connObj.getServiceUserID());
+          File achFile = new File(connObj.getAchOutputPath());
+          //Create the ACH Generation folder if not exist
+          if (!achFile.exists())
+            achFile.mkdir();
+
+
+          //Calculating the move file path
+          String movedFilePath  = connObj.getAchOutputPath() + File.separator + sftpObj.getFilePrefix();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calculted Moved File Path 1-->"+movedFilePath);
+          achFile = new File(movedFilePath);
+          //Create the ACH Generation folder if not exist
+          if (!achFile.exists())
+            achFile.mkdir();
+
+          //Caluclating the Directory for moving the file
+          movedFilePath  = movedFilePath  + File.separator + Constants.ACH_MOVE_SENT_DIR;
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calculted Moved File Path 2-->"+movedFilePath);
+          achFile = new File(movedFilePath);
+          //Create the ACH Generation folder if not exist
+          if (!achFile.exists())
+            achFile.mkdir();
+
+          movedFilePath = movedFilePath + File.separator + fileStatics.getFilePath().substring((fileStatics.getFilePath().lastIndexOf(File.separator) + 1 ),fileStatics.getFilePath().length());
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Calculted Moved Complete File Path -->"+movedFilePath);
+
+          achFile = new File(fileStatics.getFilePath());
+          flag = achFile.renameTo(new File(movedFilePath));
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Able to Successfully move the file -->"+flag);
+      } catch (Exception ex){
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in moving the processed ACH file -->"+ex);
+        throw new ProcessValuesExcep(-1,"Exception in moving the processed ACH file   -->"+ex);
+      }//end catch
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Flag value returned moving the processed ACH file -->"+flag);
+      return flag;
+    }//end method
+
+  /**
+   * Method for loading the SFTP information for the ODFI
+   * @param fileStatics: object containing the ODFI information
+   * @param dbConn: connection object for database operations
+   * @return: object containign the SFTP information for the ODFI
+   * @throws ProcessValuesExcep
+   */
+  public ODFISFTPInfoObj loadODFISFTPInformation(FileStatisticsObj fileStatics,Connection dbConn)
+      throws ProcessValuesExcep {
+      StringBuffer query = new StringBuffer();
+      Statement smt = null;
+      ResultSet rs = null;
+      ODFISFTPInfoObj sftpObj = null;
+      try {
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Method for loadODFISFTPInformation -->"+fileStatics);
+        query.append(" select sftp_address,sftp_user,sftp_user_passwd,sftp_path,filename_prefix,sftp_port,to_mails");
+        query.append(" from ach_origin_odfis");
+        query.append(" where ach_origin_id = ");
+        CommonUtilities.buildQueryInfo(query,fileStatics.getOriginId(),true);
+        query.append(" and odfi_routing_no = ");
+        CommonUtilities.buildQueryInfo(query,fileStatics.getOdfiRoutingNo(),true);
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Query for getting the SFTP information of ODFI -->"+query.toString());
+        smt = dbConn.createStatement();
+        rs = smt.executeQuery(query.toString());
+         //Populating the User Information
+        if (rs.next()) {
+          sftpObj = new ODFISFTPInfoObj();
+
+          if (rs.getString(1) != null)
+            sftpObj.setSftpURL(rs.getString(1).trim());
+
+          if (rs.getString(2) != null)
+            sftpObj.setSftpUser(rs.getString(2).trim());
+
+          if (rs.getString(3) != null)
+            sftpObj.setSftpPassword(rs.getString(3).trim());
+
+          if (rs.getString(4) != null)
+            sftpObj.setSftpPath(rs.getString(4).trim());
+
+          if (rs.getString(5) != null)
+            sftpObj.setFilePrefix(rs.getString(5).trim());
+
+          if (rs.getString(6) != null)
+            sftpObj.setSftpPort(rs.getString(6).trim());
+
+          if (rs.getString(7) != null)
+            sftpObj.setNotifyEmailAddress(rs.getString(7).trim());
+        }//end if
+      } catch (Exception ex){
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in loading ODFI SFTP information -->"+ex);
+        throw new ProcessValuesExcep(-1,"Exception in loading ODFI SFTP information   -->"+ex);
+      } finally {
+        try {
+          if (rs != null)
+            rs.close();
+          if (smt != null)
+            smt.close();
+        } catch (Exception e) {} //end catch
+      }
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," SFTP Object Value retruning -->"+sftpObj);
+      return sftpObj;
+    }//end method
+
+
+
+
+   /**
+    * Method for processing the ACH transacion through the API
+    * @param achObj: object containing the ACH ODFI information to be processed
+    * @param dbConn: connection object for the database operation
+    * @throws ProcessValuesExcep
+    */
+   private Vector processScheduledACHInformation(Connection dbConn,ACHInfoObj achObj)
+     throws ProcessValuesExcep {
+   DbConnectionInfoObj connObj = null;
+   Vector achFilesList = null;
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Method for Calling API for Processing ACH ODFI <--- ODFI Schduled Date Time -->"+achObj.getScheduledDateTime()+"<--- ODFI -->"+achObj.getScheduledODFI()+"<----- Instance ---->"+instanceName);
+      //Getting the Connection Information object
+      connObj = (DbConnectionInfoObj)LoadProperties.instanceConnectionsTable.get(instanceName);
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance  -->"+instanceName+"<--- Instance Information Object -->"+connObj);
+      //Checking for the Mandatory Parameters
+      if (connObj == null || achObj.getScheduledODFI() == null || connObj.getServiceUserID() == null || connObj.getAchOutputPath() == null)
+        throw new ProcessValuesExcep(-1,"Mandatory Value is missing for calling the Generate ACH API ");
+
+       //Calling API for processing the scheduled ACH
+       //Made the following line comment (Agohar)
+//        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance Information GOT -- Istance Name -->"+connObj.getConnectionName()+"<--- ACH Output Path -->"+connObj.getAchOutputPath()+"<--- Service User ID -->"+connObj.getServiceUserID()+"<--- Fc Connection -->"+fcDbConn);
+       //removed the Fast Cash Connection message (Agohar)
+       CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," Instance Information GOT -- Istance Name -->"+connObj.getConnectionName()+"<--- ACH Output Path -->"+connObj.getAchOutputPath()+"<--- Service User ID -->"+connObj.getServiceUserID());
+        File achFile = new File(connObj.getAchOutputPath());
+        //Create the ACH Generation folder if not exist
+        if (!achFile.exists())
+          achFile.mkdir();
+        //Checking if the ACH Generation folder exist
+        if (!achFile.exists())
+          throw new ProcessValuesExcep(-1,"ACH Generation Folder not exist ");
+        //Creating the Log File Path
+        String achLogFilePath = Constants.LOG_FILE_PATH + File.separator + instanceName + File.separator + Constants.ACH_DIR + File.separator;
+        achFile = new File(achLogFilePath);
+        //Create the ACH Generation folder if not exist
+        if (!achFile.exists())
+          achFile.mkdir();
+        CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," ACH Log File Path -->"+achLogFilePath);
+        //Calling the API
+//        achFilesList = ACHProcessor.process(dbConn,achObj.getScheduledODFI(),connObj.getServiceUserID(),connObj.getAchOutputPath(),achLogFilePath,Constants.LOG_DEBUG_LEVEL,fcDbConn);
+        //changed the ACH API call (Agohar)
+        achFilesList = ACHProcessor.process(dbConn,achObj.getScheduledODFI(),connObj.getServiceUserID(),connObj.getAchOutputPath(),achLogFilePath,Constants.LOG_DEBUG_LEVEL);
+
+        if (achFilesList != null) {
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                          " ACH Process File List -->" +
+                                          achFilesList.size());
+        } else{
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                         " ACH Process File List is NULL -->");
+        }
+    } catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Calling API for Processing ACH ODFI Transaction -->"+ex);
+      throw new ProcessValuesExcep(-1,"Exception in Calling API for Processing ACH ODFI  -->"+ex);
+    }//end catch
+    return achFilesList;
+  }//end method
+
+}//end class

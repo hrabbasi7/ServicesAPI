@@ -1,0 +1,260 @@
+package com.i2c.service.billpaymentschedularservice.achbatchconfig;
+
+import com.i2c.service.util.CommonUtilities;
+import com.i2c.service.util.Constants;
+import com.i2c.service.util.LogLevel;
+import com.i2c.service.util.DatabaseHandler;
+import com.i2c.service.billpaymentschedularservice.ServiceMain;
+
+//import com.i2c.achloadbatch.jobs.AchLoadBatchHandler;
+//import com.i2c.achloadbatch.framework.FileStatistics;
+
+import java.sql.*;
+import java.util.Vector;
+import java.io.File;
+
+public class ACHBatchConfigThread
+    extends Thread {
+  private String instanceName = null;
+
+  public ACHBatchConfigThread(String instanceName) {
+    this.instanceName = instanceName;
+  }
+
+  public void run() {
+
+    ACHBatchConfigDAO configDAO = null;
+    Connection dbConn = null;
+
+    boolean batchTime = false;
+    Vector batchStats = null;
+    ACHBatchConfigMailer batchMailer = null;
+    try {
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ACHBatchConfigThread -- Method Name: run --- ACHBatchConfigThread is started");
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ACHBatchConfigThread -- Method Name: run --- Getting Database Connection for instance --->" + instanceName);
+      dbConn = DatabaseHandler.getConnection("ACHBatchConfigThread",instanceName);
+      configDAO = new ACHBatchConfigDAO(instanceName,dbConn);
+
+      while (true) {
+        try {
+
+          try {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Calling method for testing database connection");
+            testConnection(dbConn);
+          }catch (SQLException tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- SQL Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHBatchConfigThread",instanceName);
+              configDAO = new ACHBatchConfigDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Exception in creating new Connection");
+            }
+
+          }catch (Exception tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection--->" + tstConEx);
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHBatchConfigThread",instanceName);
+              configDAO = new ACHBatchConfigDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Exception in creating new Connection");
+            }
+
+          }catch (Throwable tstConTh) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Severe Exception in testing database connection -- Creating new Connection--->" + tstConTh);
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHBatchConfigThread",instanceName);
+              configDAO = new ACHBatchConfigDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHBatchConfigThread -- Method Name: run --- Exception in creating new Connection");
+            }
+          }
+
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_BATCH_CONFIG_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "Checking if service is allowed for this instance");
+
+          if (configDAO.processScheduler(dbConn,Constants.USE_ACH_BATCH_CONFIG)) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                    "service is allowed for this instance");
+
+            batchTime = configDAO.checkScheduleTime();
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                    "ACHBatchConfigThread --- run --- Response received from checkScheduleTime ---> " +
+                    batchTime);
+            if (batchTime) {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_BATCH_CONFIG_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                      "ACHBatchConfigThread --- run --- Invoking ACH Batch Config processing");
+              try {
+                batchStats = invokeACHBatchConfigProcessing(dbConn);
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.ACH_BATCH_CONFIG_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                        "ACHBatchConfigThread --- run --- Sending success email");
+
+                batchMailer = new ACHBatchConfigMailer(Constants.
+                    ACH_LD_BTCH_SUCC, instanceName, Constants.getMachineIP(),
+                    batchStats,dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              catch (Exception procEx) {
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.ACH_BATCH_CONFIG_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                        "ACHBatchConfigThread --- run --- Exception in processing of ACH Load Batch --- Emailing to Admin-->" + procEx);
+                batchMailer = new ACHBatchConfigMailer(Constants.
+                    ACH_LD_BTCH_FAIL, instanceName, Constants.getMachineIP(),
+                    procEx.toString(), CommonUtilities.getStackTrace(procEx),dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_BATCH_CONFIG_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                      "ACHBatchConfigThread --- run --- Updating the Schedule Date");
+              configDAO.updateNextSchedule();
+            } //end if check schTime arrived
+            else {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_BATCH_CONFIG_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                      "ACHBatchConfigThread --- run --- ACH Batch Config processing Time not arrived -- Sleeping for default time");
+              sleep(Constants.DEFAULT_SLEEP_TIME);
+            }
+          } //end if check isAllowed
+          else {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_BATCH_CONFIG_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                    "ACHBatchConfigThread --- run --- ACH Batch Config processing is not allowed for this instance");
+            sleep(Constants.DEFAULT_SLEEP_TIME);
+          }
+        } //end inner try
+        catch (Exception ex) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_BATCH_CONFIG_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "ACHBatchConfigThread --- Excpetion in ACH Batch Config processing--->" +
+                  ex);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        } //end inner catch
+      } //end while
+    } //end outer try
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHBatchConfigThread --- Outer Catch -- Excpetion in ACH BATCH Scheduler--->" +
+              ex);
+    }
+  } //end run
+
+  private Vector invokeACHBatchConfigProcessing(Connection dbConn) throws Exception {
+    AchLoadBatchHandler batchHandler = new AchLoadBatchHandler();
+    StringBuffer ouputPath = new StringBuffer();
+    StringBuffer logPath = new StringBuffer();
+    Vector returnList = null;
+
+    try {
+      logPath.append(Constants.LOG_FILE_PATH + File.separator + instanceName +
+                     File.separator + Constants.ACH_BATCH_CONFIG_LOG_FOLDER);
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Log File Path to be passed--->" +
+              logPath);
+
+      if (!new File(logPath.toString()).exists()) {
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_BATCH_CONFIG_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Creating Log File Folder(s)--->" +
+                new File(logPath.toString()).mkdirs());
+      }
+      if (Constants.ACH_BATCH_CONFIG_OUTPUT_PATH != null &&
+          Constants.ACH_BATCH_CONFIG_OUTPUT_PATH.trim().length() > 0) {
+        ouputPath.append(Constants.ACH_BATCH_CONFIG_OUTPUT_PATH +
+                         File.separator + instanceName);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_BATCH_CONFIG_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Output Path to be passed--->" +
+                ouputPath);
+        if (!new File(ouputPath.toString()).exists()) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_BATCH_CONFIG_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Creating OutPut Path Folder(s)--->" +
+                  new File(ouputPath.toString()).mkdirs());
+        }
+      }
+      else {
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_BATCH_CONFIG_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- ACH Load Batch Output Path value does not exist in configuration file-->" +
+                Constants.ACH_BATCH_CONFIG_OUTPUT_PATH);
+
+        throw new Exception(
+            "ACH Load Batch Output Path value does not exist in configuration file--->" +
+            Constants.ACH_BATCH_CONFIG_OUTPUT_PATH);
+      }
+//////////////*************************//////////////////
+      returnList = batchHandler.processFiles(dbConn, logPath.toString(),
+                                             ouputPath.toString());
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Resposne Received from API --->" +
+              returnList);
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_BATCH_CONFIG_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_WARNING),
+              "ACHBatchConfigThread --- invokeACHBatchConfigProcessing --- Exception in processing of ACH Batch Config--->" +
+              ex);
+      throw new Exception("Exception in processing of ACH Batch Config--->" +
+                          ex);
+
+    }
+    return returnList;
+  } //end method
+
+  private void testConnection(Connection dbConn) throws SQLException {
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+
+    CommonUtilities.getLogger(instanceName,
+                              Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Method for testing database conenction ");
+
+    query.append("select business_date from system_variables");
+    stmt = dbConn.createStatement();
+    stmt.executeQuery(query.toString());
+    stmt.close();
+  }
+
+}

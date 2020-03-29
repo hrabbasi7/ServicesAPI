@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refactor PUBLIC "-//Borland Software Corporation//Refactor 1.0//EN" "http://www.borland.com/devsupport/jbuilder/dtds/refactor_1_0.dtd">
+
+<refactor>
+  <rename-class id="6AP0FKLYR2XE9VVZ1IX0QKH0" creation-time="Thu Jan 25 02:53:11.609 PKT 2007">
+    <old-class-name>com.i2c.service.couponschedularservice.DAO.CouponGenerationServiceHome</old-class-name>
+    <new-class-name>com.i2c.service.couponschedularservice.DAO.CouponGenerationServiceDAO</new-class-name>
+  </rename-class>
+  <rename-package id="7AP0FJF6KNXENXGR5IX0QKH0" creation-time="Fri Feb 02 00:05:28.859 PKT 2007">
+    <old-package-name>com.i2c.service.couponschedularservice.bl</old-package-name>
+    <new-package-name>com.i2c.service.couponschedularservice.businesslogic</new-package-name>
+  </rename-package>
+</refactor>
+

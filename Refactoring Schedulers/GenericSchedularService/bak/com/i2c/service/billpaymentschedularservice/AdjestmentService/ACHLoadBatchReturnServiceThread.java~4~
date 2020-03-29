@@ -1,0 +1,283 @@
+package com.i2c.service.billpaymentschedularservice.AdjestmentService;
+
+import com.i2c.service.util.CommonUtilities;
+import com.i2c.service.util.Constants;
+import com.i2c.service.util.LogLevel;
+import com.i2c.service.util.DatabaseHandler;
+import com.i2c.service.billpaymentschedularservice.ServiceMain;
+import com.i2c.service.billpaymentschedularservice.monitor.AdjustmentServiceMonitor;
+
+import com.i2c.billpayment.vo.*;
+//import com.i2c.achloadbatch.jobs.AchReturnFileGenerator;
+
+import java.sql.*;
+import java.util.Vector;
+import java.io.File;
+import com.i2c.billpayment.jobs.BillPaymentProcessor;
+
+public class ACHLoadBatchReturnServiceThread
+    extends Thread {
+  private String instanceName = null;
+  private ACHLoadBatchReturnServiceMonitor monitorThread = null;
+
+  public ACHLoadBatchReturnServiceThread(String instanceName,ACHLoadBatchReturnServiceMonitor monitorThread) {
+    this.instanceName = instanceName;
+    this.monitorThread = monitorThread;
+  }
+
+  public void run() {
+
+    ACHLoadBatchReturnServiceDAO configDAO = null;
+    Connection dbConn = null;
+    boolean batchTime = false;
+    StringBuffer batchStats = null;
+    ACHLoadBatchReturnMailer batchMailer = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ACHLoadBatchReturnServiceThread -- Method Name: run --- ACHBatchLoadReturn Thread is started");
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "ACHLoadBatchReturnServiceThread -- Method Name: run --- Getting Database Connection for instance --->" + instanceName);
+      dbConn = DatabaseHandler.getConnection("ACHLoadBatchReturnServiceThread",instanceName);
+      configDAO = new ACHLoadBatchReturnServiceDAO(instanceName,dbConn);
+
+      while (true) {
+
+        try {
+          try {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread -- Method Name: run --- Calling method for testing database connection");
+            testConnection(dbConn);
+          }catch (SQLException tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHLoadBatchReturnServiceThread",instanceName);
+              configDAO = new ACHLoadBatchReturnServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }catch (Exception tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHLoadBatchReturnServiceThread",instanceName);
+              configDAO = new ACHLoadBatchReturnServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }
+
+
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nGetting current date time for updating ACH_LOAD_BATCH_RETURN_SERVICE monitoring Date Time ");
+          java.util.Date currDate = getCurrentDate();
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nUpdating ACH_LOAD_BATCH_RETURN_SERVICE Monitoring Date Time --- Current Date Time Got--->" +
+              currDate);
+          monitorThread.setMonitorDateTime(currDate);
+          if (configDAO.processScheduler(dbConn,Constants.USE_ACH_LOAD_BATCH_RETURN)) {
+            batchTime = configDAO.checkScheduleTime();
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "ACHLoadBatchReturnServiceThread --- run --- Response received from checkScheduleTime ---> " +
+                    batchTime);
+            if (batchTime) {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ACHLoadBatchReturnServiceThread --- run --- Invoking ACH Batch Config processing");
+              try {
+                batchStats = invokeACHLoadBatchReturnProcessing(dbConn);
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.
+                                          ACH_LOAD_BATCH_RETURN_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "ACHLoadBatchReturnServiceThread --- run --- Sending success email");
+
+                batchMailer = new ACHLoadBatchReturnMailer(Constants.ACH_LD_BCH_RET_SUM, instanceName, null,
+                    batchStats.toString(),dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              catch (Exception procEx) {
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "ACHLoadBatchReturnServiceThread --- run --- Exception in processing of ACH Load Batch --- Emailing to Admin-->" + procEx);
+                batchMailer = new ACHLoadBatchReturnMailer(Constants.
+                    ACH_LD_BCH_RET_FAIL, instanceName, Constants.getMachineIP(),
+                    procEx.toString(), CommonUtilities.getStackTrace(procEx),dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ACHLoadBatchReturnServiceThread --- run --- Updating the Schedule Date");
+              configDAO.updateNextSchedule();
+            } //end if check schTime arrived
+            else {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "ACHLoadBatchReturnServiceThread --- run --- ACH Batch Config processing Time not arrived -- Sleeping for default time");
+              sleep(Constants.DEFAULT_SLEEP_TIME);
+            }
+          } //end if check isAllowed
+          else {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "ACHLoadBatchReturnServiceThread --- run --- ACH Batch Config processing is not allowed for this instance");
+            sleep(Constants.DEFAULT_SLEEP_TIME);
+          }
+        } //end inner try
+        catch (Exception ex) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_FINEST),
+                  "ACHLoadBatchReturnServiceThread --- Excpetion in ACH Batch Config processing--->" +
+                  ex);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        } //end inner catch
+      } //end while
+    } //end outer try
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_FINEST),
+              "ACHLoadBatchReturnServiceThread --- Outer Catch -- Excpetion in ACH BATCH Scheduler--->" +
+              ex);
+    }
+  } //end run
+
+  private StringBuffer invokeACHLoadBatchReturnProcessing(Connection dbConn) throws Exception {
+    BillPaymentProcessor bp = null;
+//    AchReturnFileGenerator returnHandler = null;
+    StringBuffer logPath = new StringBuffer();
+    BPFileStatistics bpPaymentFileStatus = null;
+    StringBuffer returnMsg = null;
+    StringBuffer ouputPath = new StringBuffer();
+
+    try {
+      logPath.append(Constants.LOG_FILE_PATH + File.separator + instanceName +
+                     File.separator +
+                     Constants.ACH_LOAD_BATCH_RETURN_LOG_FOLDER);
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHLoadBatchReturnServiceThread --- invokeACHLoadBatchReturnProcessing --- Log File Path to be passed--->" +
+              logPath);
+
+      if (!new File(logPath.toString()).exists()) {
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ACHLoadBatchReturnServiceThread --- invokeACHLoadBatchReturnProcessing --- Creating Log File Folder(s)--->" +
+                new File(logPath.toString()).mkdirs());
+      }
+      if (Constants.ACH_BATCH_CONFIG_OUTPUT_PATH != null &&
+          Constants.ACH_BATCH_CONFIG_OUTPUT_PATH.trim().length() > 0) {
+        ouputPath.append(Constants.ACH_BATCH_CONFIG_OUTPUT_PATH +
+                         File.separator + instanceName);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "ACHBatchConfigThread --- invokeACHLoadBatchReturnProcessing --- Output Path to be passed--->" +
+                ouputPath);
+        if (!new File(ouputPath.toString()).exists()) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "ACHBatchConfigThread --- invokeACHLoadBatchReturnProcessing --- Creating OutPut Path Folder(s)--->" +
+                  new File(ouputPath.toString()).mkdirs());
+        }
+      }else {
+        CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHBatchConfigThread --- invokeACHLoadBatchReturnProcessing --- ACH Load Batch Output Path value does not exist in configuration file-->" + Constants.ACH_BATCH_CONFIG_OUTPUT_PATH);
+
+        throw new Exception(
+            "ACH Load Batch Output Path value does not exist in configuration file--->" +
+            Constants.ACH_BATCH_CONFIG_OUTPUT_PATH);
+      }
+      /*************************************/
+      bp = new BillPaymentProcessor (logPath.toString(), dbConn);
+      bp.processBillPayments(ouputPath.toString() , "1");
+
+      bpPaymentFileStatus.getFileName();
+      bpPaymentFileStatus.getTotalAmount();
+      bpPaymentFileStatus.getTotalBatches();
+      bpPaymentFileStatus.getTotalFailedTrans();
+      bpPaymentFileStatus.getTotalSuccessTrans();
+      bpPaymentFileStatus.getTotalTrans();
+
+//      returnHandler = new AchReturnFileGenerator(dbConn);
+//      returnMsg = returnHandler.generateReturnFiles(logPath.toString(), ouputPath.toString());
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "ACHLoadBatchReturnServiceThread --- invokeACHLoadBatchReturnProcessing --- Resposne Received from API --->" +
+              returnMsg);
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_WARNING),
+              "ACHLoadBatchReturnServiceThread --- invokeACHLoadBatchReturnProcessing --- Exception in processing of ACH Batch Config--->" +
+              ex);
+      throw new Exception("Exception in processing of ACH Batch Config--->" +
+                          ex);
+
+    }
+    return returnMsg;
+  } //end method
+
+  private java.util.Date getCurrentDate() {
+    java.util.Date currDate = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(
+          LogLevel.
+          getLevel(Constants.LOG_FINEST),
+          " Getting current Date ");
+      currDate = new java.util.Date();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_LOAD_BATCH_RETURN_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Getting current Date --->" + ex);
+    }
+    return currDate;
+  }
+
+  private void testConnection(Connection dbConn) throws SQLException {
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+
+    CommonUtilities.getLogger(instanceName,
+                              Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Method for testing database conenction ");
+
+    query.append("select business_date from system_variables");
+    stmt = dbConn.createStatement();
+    stmt.executeQuery(query.toString());
+    stmt.close();
+  }
+
+
+}

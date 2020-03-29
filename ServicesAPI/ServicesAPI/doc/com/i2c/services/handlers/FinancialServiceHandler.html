@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class com.i2c.services.handlers.FinancialServiceHandler</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">com.i2c.services.handlers</FONT>
+<BR>Class FinancialServiceHandler</H2>
+<DL>
+<DT>public class <B>FinancialServiceHandler</B>
+</DL>
+<DL><DD><p>Title: </p> <p>Description: This class provides financial Services methods </p> <p>Copyright: Copyright (c) 2004</p> <p>Company: I2c Inc</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Agohar</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Constructor Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>FinancialServiceHandler</H3>
+<PRE>
+private <B>FinancialServiceHandler</B>(Connection&nbsp;_con)</PRE>
+<DL><DD>Constructor<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection</DD>
+</DL>
+<HR>
+
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>getInstance</H3>
+<PRE>
+public static FinancialServiceHandler <B>getInstance</B>(Connection&nbsp;_con)</PRE>
+<DL><DD>This method creates the instance of FinancialServiceHandler if it is not created otherwise return the already created object<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection</DD>
+<DT><B>Returns:</B><DD>FinancialServiceHandler -- Required object</DD>
+</DL>
+<HR>
+
+<H3>cardToCardTransfer</H3>
+<PRE>
+public ServicesResponseObj <B>cardToCardTransfer</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to perform the card to card transfer<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>addFunds</H3>
+<PRE>
+public ServicesResponseObj <B>addFunds</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method debit or credit funds from specified card account. If amount is +ive then funds will be credited otherwise debited from the card account<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>makePurchaseTransaction</H3>
+<PRE>
+public ServicesResponseObj <B>makePurchaseTransaction</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to make purchase transaction<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>performReversal</H3>
+<PRE>
+public ServicesResponseObj <B>performReversal</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to reverse the already made transaction<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardBalance</H3>
+<PRE>
+public ServicesResponseObj <B>getCardBalance</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the balance of supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardTransactions</H3>
+<PRE>
+public ServicesResponseObj <B>getCardTransactions</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method retreives the specified no of transaction against the supplied card no<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>allCashOut</H3>
+<PRE>
+public ServicesResponseObj <B>allCashOut</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method makes the balance of supplied card to zero<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

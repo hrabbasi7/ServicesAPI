@@ -1,0 +1,339 @@
+package com.i2c.schedulerframework.util;
+
+
+import java.sql.*;
+import java.util.*;
+import java.io.*;
+
+import com.i2c.schedulerframework.util.*;
+import com.i2c.schedulerframework.model.InstanceDbConfigBean;
+import com.i2c.schedulerframework.main.MainServiceRunner;
+import com.i2c.schedulerframework.model.DbConfigBean;
+import com.i2c.utils.logging.I2cLogger;
+import java.util.logging.Logger;
+
+public class DatabaseConnectionUtil {
+
+  /**
+     * Method for getting the database connection
+     * @param servletName: the class which is getting a connection
+     * @return: the connection
+     * @throws SQLException
+     */
+    public static Connection getMasterConnection(String className,
+                                                 String instanceName,
+                                                 DbConfigBean connObj,
+                                                 Logger lgr) throws SQLException {
+//      DbConfigBean connObj = null;
+      System.out.println("Getting DB connection Instance Name -->"+instanceName+" Connection Instance Size -->"+ConfigrationHandler.instanceConnectionsTable.size());
+      try {
+        Class.forName(BaseConstants.DB_DRIVER_NAME);
+      } catch (Exception e){
+      e.printStackTrace();
+    }
+
+      //Checking the Instance Connection Poool
+      if (instanceName == null || !ConfigrationHandler.instanceConnectionsTable.containsKey(instanceName))
+        throw new SQLException("Invalid Instance Id");
+      //Getting the Connection Information object
+      connObj = (DbConfigBean) ConfigrationHandler.instanceConnectionsTable.get(instanceName);
+
+      if (connObj == null)
+        throw new SQLException("Invalid Instance Id");
+
+      System.out.println("Got Connection Object Connection String is -->" + connObj.getConnectionString() +
+                         "<---Connection Name -->" + connObj.getConnectionName() +
+                         "<-- User -->"+ connObj.getUserID() +
+                         "<--- Password -->" + connObj.getPasswod() +
+                         "<--- Connection Pool Size -->" + connObj.getConnectionPool().size());
+
+      //Creating Instance connection
+      Connection con = DriverManager.getConnection(connObj.getConnectionString(), connObj.getUserID(), connObj.getPasswod());
+
+      try {
+        System.out.println("DataBaseHandler --- getConnection --- Calling checkConnection method --- Response received-->" + checkConnection(con, lgr));
+      }
+      catch (SQLException ex) {
+        System.out.println("DataBaseHandler --- getConnection --- Exception in the method for checking connection ---> " + ex);
+        throw new SQLException(ex.getMessage() );
+      }
+      return con;
+  }//end get connection
+
+  /**
+   * Method for getting the database connection
+   * @param servletName: the class which is getting a connection
+   * @return: the connection
+   * @throws SQLException
+   */
+  public static Connection getConnection(String className, String instanceName, Logger lgr) throws SQLException {
+    DbConfigBean connObj = null;
+    lgr.log(I2cLogger.FINEST,"Getting DB connection Instance Name -->"+instanceName+" Connection Instance Size -->"+ConfigrationHandler.instanceConnectionsTable.size());
+    try {
+      Class.forName(BaseConstants.DB_DRIVER_NAME);
+    } catch (Exception e){}
+
+    //Checking the Instance Connection Poool
+    if (instanceName == null || !ConfigrationHandler.instanceConnectionsTable.containsKey(instanceName))
+      throw new SQLException("Invalid Instance Id");
+    //Getting the Connection Information object
+    connObj = (DbConfigBean)ConfigrationHandler.instanceConnectionsTable.get(instanceName);
+
+    if (connObj == null)
+      throw new SQLException("Invalid Instance Id");
+
+    lgr.log(I2cLogger.INFO," Got Connection Object Connection String is -->"+connObj.getConnectionString()+"<---Connection Name -->"+connObj.getConnectionName()+"<-- User -->"+connObj.getUserID()+"<--- Password -->"+connObj.getPasswod()+"<--- Connection Pool Size -->"+connObj.getConnectionPool().size());
+    //Creating Instance connection
+    Connection dbConn = DriverManager.getConnection(connObj.getConnectionString(), connObj.getUserID(), connObj.getPasswod());
+    try {
+      lgr.log(I2cLogger.FINEST,"DataBaseHandler --- getConnection --- Calling checkConnection method --- Response received-->" + checkConnection(dbConn, lgr));
+    }
+    catch (SQLException ex) {
+      lgr.log(I2cLogger.WARNING,"DataBaseHandler --- getConnection --- Exception in the method for checking connection ---> " + ex);
+      throw new SQLException(ex.getMessage() );
+    }
+    return dbConn;
+  }//end get connection
+
+  /**
+   * Method for closing the connection
+   * @param returned:
+   * @param servletName: the class which is returning the connection
+   */
+  public static void returnConnection( String className, Connection returned) {
+    try {
+      returned.close();
+    } catch(Exception e){}
+  }//end return connection
+/**
+ * Method for getting the FC database connection
+ * @param servletName: the class which is getting a connection
+ * @return: the connection
+ * @throws SQLException
+ */
+public static Connection getFCConnection(String className,String instanceName, Logger lgr) throws SQLException {
+  DbConfigBean connObj = null;
+  lgr.log(I2cLogger.FINEST,"Getting FC DB connection Instance Name -->"+instanceName+" Connection Instance Size -->"+ConfigrationHandler.instanceConnectionsTable.size());
+  try {
+    Class.forName(BaseConstants.DB_DRIVER_NAME);
+  } catch (Exception e){}
+
+  //Checking the Instance Connection Poool
+  if (instanceName == null || !ConfigrationHandler.instanceConnectionsTable.containsKey(instanceName))
+    throw new SQLException("Invalid Instance Id");
+  //Getting the Connection Information object
+  connObj = (DbConfigBean)ConfigrationHandler.instanceConnectionsTable.get(instanceName);
+
+  if (connObj == null)
+    throw new SQLException("No Connection info found for provided instance");
+  lgr.log(I2cLogger.FINEST," Got FC Connection Object Connection String is -->"+connObj.getFcConnectionString()+"<---Connection Name -->"+connObj.getConnectionName()+"<-- User -->"+connObj.getFcUserID()+"<--- Password -->"+connObj.getFcPasswod());
+  //Creating Instance connection
+  Connection con = DriverManager.getConnection(connObj.getFcConnectionString(), connObj.getFcUserID(), connObj.getFcPasswod());
+  return con;
+}//end get connection
+
+/******************************************************************************/
+  /**
+   * This method is used to check connections
+   * @param con Connection
+   * @return boolean
+   * @throws SQLException Exception
+   */
+  public static boolean checkConnection(Connection con, Logger lgr) throws SQLException {
+    boolean ret = false ;
+    lgr.log(I2cLogger.FINEST,"DataBaseHandler --- checkConnection --- In the method for checking connection --- Coneection received--->" + con);
+    CallableStatement stmt = null ;
+    try {
+      stmt = con.prepareCall("execute procedure set_isolation_proc()") ;
+      stmt.executeUpdate() ;
+      stmt.close() ;
+      ret = true ;
+    } catch(SQLException e) {
+      throw new SQLException("Connection inactive: " + e.getMessage() );
+    } catch (Exception ex ) {
+      lgr.log(I2cLogger.WARNING,"DataBaseHandler --- checkConnection --- Exception in checking connection ---> " + ex);
+      throw new SQLException("Error: " + ex.getMessage() ) ;
+    }
+    return ret;
+  }//end check Conenction Method
+
+
+  /**
+   * Load Instances DB Connection information in arrayList from Ext_interfaces table
+   * @param conn DbConfigBean
+   * @return ArrayList
+   * @throws Exception
+   */
+  public static ArrayList getExtInterfaceConfig(DbConfigBean conn) throws Exception
+   {
+     StringBuffer query = new StringBuffer();
+     Class.forName(BaseConstants.DB_DRIVER_NAME);
+     Connection extCon = DriverManager.getConnection(
+        conn.getConnectionString(),
+        conn.getUserID(),
+        conn.getPasswod());
+
+     ArrayList instancesDbConnList = new ArrayList();
+
+     /**
+      *  build query to get the external interfaces
+      */
+
+     query.append("SELECT i.instance_id, i.instance_name, i.instance_abrv, i.db_conn_string, i.db_user_id, i.db_user_passwd, i.conn_driver_name, ssi.is_enabled ");
+     query.append("FROM instances i, scheduler_service_instances ssi, scheduler_services ss ");
+     query.append("WHERE i.instance_id = ssi.instance_id ");
+     query.append("AND ss.schd_service_id = ssi.schd_service_id ");
+     query.append("AND ssi.is_enabled = 'Y' ");
+     query.append("AND ss.is_allowed IN ( 'Y', 'P' ) ");
+     query.append("AND ss.service_name IN( '" + BaseConstants.SCHEDULER_ID + "' ) ");
+
+
+     Statement pstmt = null;
+     ResultSet rs = null;
+
+     try {
+      //prepare the statement
+      pstmt = extCon.createStatement();
+
+      System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Query to Get DB Connections to RUN---:>" + query.toString());
+
+      //execute the statement
+      rs = pstmt.executeQuery(query.toString());
+
+      System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Query Executed to get IntanceDBinformtion from 'Instances'");
+
+      //flag to hold the invalid configuration status
+      boolean isInvalidConfig = false;
+
+      while(rs.next()) {
+
+        InstanceDbConfigBean configObj = new InstanceDbConfigBean();
+        //set the interface id
+        String id = rs.getString("instance_id").trim();
+        configObj.setInterfaceId(id);
+
+        //get the interface name
+        String value = rs.getString("instance_name").trim();
+        System.out.println("Interface Name -- > " + value);
+        configObj.setInterfaceName((value != null ? value : ""));
+
+        //get the Connection driver name
+        value = rs.getString("conn_driver_name").trim();
+        System.out.println("Driver Name -- > " + value);
+        if(value == null || value.trim().equalsIgnoreCase("")) {
+          System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Connection Driver Name not found against interface id -- > "
+                             + configObj.getInterfaceId());
+          isInvalidConfig = true;
+       } else {
+         //set the driver name
+         configObj.setDriverName(value);
+       }
+
+       //get the connection string
+       value = rs.getString("db_conn_string").trim();
+       System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Connection String -- > " + value);
+       if(value == null || value.trim().equalsIgnoreCase("")){
+         System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Connection String not found against interface id -- > "
+                            + configObj.getInterfaceId());
+         isInvalidConfig = true;
+       } else {
+         //set the connection string
+         configObj.setConnString(value);
+       }
+
+       //get the user id
+       value = rs.getString("db_user_id").trim();
+       System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] User ID -- > " + value);
+       if(value == null || value.trim().equalsIgnoreCase("")) {
+         System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] User ID not found against interface id -- > "
+                            + configObj.getInterfaceId());
+         isInvalidConfig = true;
+       } else {
+         //set the user id
+         configObj.setUserId(value);
+       }
+
+       //get the password
+       value = rs.getString("db_user_passwd").trim();
+       System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Password -- > " + value);
+       if(value == null || value.trim().equalsIgnoreCase("")) {
+         System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Password not found against interface id -- > "
+                            + configObj.getInterfaceId());
+         isInvalidConfig = true;
+       } else {
+          //set the password
+          configObj.setPassword(value);
+        }
+
+        //get the isactive
+        value = rs.getString("is_enabled").trim();
+        System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] bp_ext_batches -- Is Active -- > " + value);
+       //set the is active
+       configObj.setIsActive((value != null ? value.trim() : "N"));
+
+       if(!isInvalidConfig)
+         instancesDbConnList.add(configObj);
+
+     }//end if(rs.next())
+
+     return instancesDbConnList;
+   }//end try
+
+   catch (Exception ex) {
+
+     System.out.println("[DatabaseConnectionUtil].[getExtInterfaceConfig] Exception -- > " + ex);
+     ex.printStackTrace();
+
+     throw new Exception(ex);
+
+     }//end catch
+
+     finally {
+       try {
+         if(rs != null) rs.close();
+         if(pstmt != null) pstmt.close();
+       }//end try
+       catch (Exception ex) {}//end
+     }//end finally
+   }
+
+
+
+
+   public static Connection getDBConnection(String instanceName,
+                                            DbConfigBean connObj,
+                                            Logger lgr) throws SQLException {
+
+     lgr.log(I2cLogger.FINE, " Getting DB connection Instance Name --> " + instanceName);
+     try {
+        Class.forName(BaseConstants.DB_DRIVER_NAME);
+      } catch (Exception e){
+      e.printStackTrace();
+    }
+
+    lgr.log(I2cLogger.INFO,
+            "Got Connection Object Connection String is -->" + connObj.getConnectionString() +
+            "<---Connection Name -->" + connObj.getConnectionName() +
+            "<-- User -->"+ connObj.getUserID() +
+            "<--- Password -->" + connObj.getPasswod() +
+            "<--- Connection Pool Size -->" + connObj.getConnectionPool().size());
+
+    //Creating Instance connection
+    Connection con = DriverManager.getConnection(connObj.getConnectionString(), connObj.getUserID(), connObj.getPasswod());
+
+      try {
+        System.out.println("[DataBaseHandler].[getDBConnection] Calling checkConnection method --- Response received-->" + checkConnection(con, lgr));
+      }
+      catch (SQLException ex) {
+        System.out.println("[DataBaseHandler].[getDBConnection] Exception in the method for checking connection ---> " + ex);
+        throw new SQLException(ex.getMessage() );
+      }
+      return con;
+  }//end get connection
+
+
+}//end class
+
+
+
+

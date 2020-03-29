@@ -1,0 +1,709 @@
+package com.i2c.service.billpaymentschedularservice.ACHService.ACHFTPSService;
+
+import com.i2c.service.schedularservice.ACHService.ACHInfoObj;
+import com.i2c.service.util.*;
+import com.i2c.service.base.BaseHome;
+import com.i2c.service.excep.*;
+import com.i2c.service.schedularservice.*;
+import com.i2c.sftp.SecureFileTransfer;
+import com.i2c.ftps.ssl.FTPSClient;
+import com.i2c.ach.framework.FileStatisticsObj;
+
+import java.util.Vector;
+import java.util.StringTokenizer;
+import java.sql.Connection;
+import java.io.*;
+
+import com.i2c.service.schedularservice.CHAuthService.CHAuthServiceHome;
+
+public class ACHFTPSHandler
+    extends BaseHome {
+  private ACHInfoObj achInfoObj = null;
+  private Vector uploadFileList = null;
+  private String instanceName = null;
+  private Connection dbConn = null;
+
+  public ACHFTPSHandler(ACHInfoObj _achInfoObj, Vector _uploadFileList,
+                        String _instanceName,Connection _dbConn) {
+    achInfoObj = _achInfoObj;
+    uploadFileList = _uploadFileList;
+    instanceName = _instanceName;
+    dbConn = _dbConn;
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler Constructor--- ACHInfoObj---> " + achInfoObj +
+                                   " ---Scheduled File List Size--->" +
+                                   uploadFileList.size() + "Instance Name---> " +
+                                   instanceName);
+  }
+
+  private boolean isFTPSAllowed() {
+    boolean flag = false;
+    StringBuffer query = new StringBuffer();
+
+    try {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " ACHFTPSHandler --- Method Name---> isFTPSAllowed ");
+
+      query.append(
+          "select auto_sftp_flag from ach_odfis where odfi_routing_no = '" +
+          achInfoObj.getScheduledODFI() + "'");
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " ACHFTPSHandler --- Method Name---> isFTPSAllowed --- Query " +
+                                     query);
+      Vector result = getKeyValues(query.toString(), dbConn);
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " ACHFTPSHandler --- Method Name---> isFTPSAllowed --- Query Result " +
+                                     result.size());
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                     " ACHFTPSHandler --- Method Name---> isFTPSAllowed --- auto_sftp_flag Value---> " +
+                                     result.elementAt(0).toString());
+      if (result.elementAt(0).toString().equalsIgnoreCase(Constants.IS_TRUE)) {
+        flag = true;
+      }
+      else if (result.elementAt(0).toString().equalsIgnoreCase(Constants.
+          IS_FALSE)) {
+        return flag;
+      }
+      else {
+        flag = true;
+      }
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> isFTPSAllowed --- Exception in isFTPSAllowed---> " + ex);
+    }
+    return flag;
+  }
+
+  public void uploadFiles() throws ProcessValuesExcep {
+    FileStatisticsObj file = null;
+    Vector processedFiles = new Vector(uploadFileList.size());
+    Vector failedFiles = new Vector();
+    StringBuffer failedMessage = new StringBuffer();
+    String dbInstanceName = null;
+    String logFilePath = Constants.LOG_FILE_PATH + File.separator +
+        instanceName + File.separator + Constants.ACH_DIR + File.separator +
+        Constants.FTPS_DIR;
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- Method Name---> uploadFiles ");
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Method Name---> ACH Info Obj Attributes---> Routing Number---> Scheduled Date Time---> " +
+                                   achInfoObj.getScheduledDateTime() +
+                                   "--->  Current Date Time--->  " +
+                                   achInfoObj.getCurrentDateTime() +
+                                   " timeDifference---> " +
+                                   achInfoObj.getTimeDifference() +
+                                   " achODFIDesc---> " +
+                                   achInfoObj.getAchODFIDesc() +
+                                   " ftpsAddress---> " +
+                                   achInfoObj.getFtpsAddress() +
+                                   " ftpsPort---> " + achInfoObj.getFtpsPort() +
+                                   " ftpsUser---> " + achInfoObj.getFtpsUser() +
+                                   " ftpsPassword---> " +
+                                   achInfoObj.getFtpsPassword() +
+                                   " ftpsPath---> " + achInfoObj.getFtpsPath() +
+                                   " serverCertFile---> " +
+                                   achInfoObj.getServerCertFile() +
+                                   " toEmailAddress---> " +
+                                   achInfoObj.getToEmailAddress());
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," ACHFTPSHandler --- Method Name---> uploadFiles --- Upload File Size ---> " +uploadFileList.size());
+
+    dbInstanceName = new CHAuthServiceHome(instanceName,dbConn).getInstanceName();
+
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," ACHFTPSHandler --- Method Name---> uploadFiles --- Instance Name Got--->" + dbInstanceName);
+
+    FTPSClient client = new FTPSClient(logFilePath);
+    if (isFTPSAllowed()) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                     " ACHFTPSHandler --- Method Name---> uploadFiles --- FTPS Library Log file---> Path " + logFilePath);
+
+      try {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+            " ACHFTPSHandler --- Method Name---> uploadFiles --- SFTP Type--->" +
+                                       achInfoObj.getFtpType());
+        if (achInfoObj.getFtpType() != null &&
+            achInfoObj.getFtpType().equals("T")) {
+          String host = achInfoObj.getFtpsAddress();
+          int port = Integer.parseInt(achInfoObj.getFtpsPort());
+          String user = achInfoObj.getFtpsUser();
+          String pwd = achInfoObj.getFtpsPassword();
+          String certPath = null;
+          if (achInfoObj.getServerCertFile() != null &&
+              Constants.ACH_FTPS_CERT_FILE != null) {
+            certPath = Constants.ACH_FTPS_CERT_FILE +
+                achInfoObj.getServerCertFile();
+          }
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                         " ACHFTPSHandler --- Method Name---> uploadFiles --- FTPS Library connect attributes---> Host---> " + host +
+                                         " Port---> " + port + " User---> " +
+                                         user + " Password---> " + pwd +
+                                         " Certificate File Path---> " +
+                                         certPath);
+          client.connect(host, port, user, pwd, certPath);
+        }
+        for (int i = 0; i < uploadFileList.size() - 1; i++) {
+          try {
+            file = (FileStatisticsObj) uploadFileList.elementAt(i);
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                " ACHFTPSHandler --- Method Name---> uploadFiles --- FTPS Library upload file attributes--- Remote Location---> " +
+                achInfoObj.getFtpsPath() + " Remote File Name---> " +
+                file.getFileId() + " Local Location---> " + file.getFilePath() +
+                " Local File Name---> " + file.getFileId());
+            if (achInfoObj.getFtpType().equals("T")) {
+              putFileWithFtps(achInfoObj, client, file); // put the files using ftps
+            }
+            else {
+              putFileWithSftp(achInfoObj, file); // put the files using sftp
+            }
+            processedFiles.add(file); // adding successfully uploaded files
+          }
+          catch (Exception ex1) {
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_WARNING),
+                " ACHFTPSHandler --- Method Name---> uploadFiles --- Exception in Uploading File ---> " + ex1);
+            failedMessage.append("FileName: " + file.getFileName());
+            failedMessage.append("\n\nMessage: " + ex1);
+            failedFiles.add(failedMessage.toString());
+          }
+        }
+      }
+      catch (Exception ex) {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                       " ACHFTPSHandler --- Method Name---> uploadFiles --- Exception in Uploading File (Cannot connect to FTPS site) ---> " + ex);
+        throw new ProcessValuesExcep( -1,
+                                     "Cannot connect to FTPS Site---> " + ex);
+      }
+      finally {
+        if (achInfoObj.getFtpType() != null &&
+            achInfoObj.getFtpType().equals("T")) {
+          client.quit();
+          client = null;
+        }
+      }
+
+      if (processedFiles.size() > 0) {
+        try {
+          sendProcessedFilesEmail(processedFiles, dbInstanceName); //Notify about successfully uploaded files through email
+        }
+        catch (Exception ex2) {
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(
+              LogLevel.getLevel(Constants.LOG_WARNING),
+              " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Exception in sending mails of processed files  ---> " + ex2);
+          throw new ProcessValuesExcep( -1,
+              "ACH FTPS Handler is not able to send mails and place processed files-->---> " +
+                                       ex2);
+        }
+        try {
+          if (!placeProcessedFiles(processedFiles, dbInstanceName)) {
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_WARNING), " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Some of the files cannot be placed at specified destination folder ---> ");
+            throw new ProcessValuesExcep( -1, "ACH FTPS Handler is not able to place processed files, Check Logs for more Information");
+          }
+        }
+        catch (Exception ex2) {
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(
+              LogLevel.getLevel(Constants.LOG_WARNING),
+              " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Exception in placing processed files in sent folder ---> " + ex2);
+          throw new ProcessValuesExcep( -1,
+              "ACH FTPS Handler is not able to send mails and place processed files-->---> " +
+                                       ex2);
+        }
+      }
+      if (failedFiles.size() > 0) {
+        sendFailedFilesEmail(failedFiles); //Notify about failed files through email
+      }
+    }
+    else {
+      try {
+        Vector fileList = new Vector();
+
+        for (int i = 0; i < uploadFileList.size() - 1; i++) {
+          fileList.add(uploadFileList.get(i));
+        } //end for
+
+        placeProcessedFiles(fileList, dbInstanceName);
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                       "--- ACH FTPS Library Processing is not Allowed--- ");
+      } //end try
+      catch (Exception exp) {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                       " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Exception in placing processed files in sent folder ---> " + exp);
+        throw new ProcessValuesExcep( -1,
+            "ACH FTPS Handler is not able to place processed files-->---> " +
+                                     exp);
+      } //end catch
+    } //end else
+  } // End Method
+
+  private void putFileWithFtps(ACHInfoObj achInfoObj, FTPSClient client,
+                               FileStatisticsObj file) throws Exception {
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+        " <----Entering method putFileWithFtps----->");
+
+    try {
+
+      client.putFile(achInfoObj.getFtpsPath(), file.getFileName(),
+                     file.getFilePath(), file.getFileName());
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                                     " File placed successfully----->" +
+                                     file.getFileName());
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> uploadFiles --- Exception in Uploading File (Cannot connect to FTPS site) ---> " + ex);
+      throw new ProcessValuesExcep( -1,
+                                   "Unable to upload file on FTPS site---> " +
+                                   ex);
+    }
+    finally {
+
+    }
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                                   " <----Exiting method putFileWithSftp----->");
+  }
+
+  private void putFileWithSftp(ACHInfoObj achInfoObj, FileStatisticsObj file) throws
+      Exception {
+    SecureFileTransfer ftp = new SecureFileTransfer(); // the ftp Object
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+        " <----Entering method putFileWithSftp----->");
+    String host = achInfoObj.getFtpsAddress();
+    int port = Integer.parseInt(achInfoObj.getFtpsPort());
+    String user = achInfoObj.getFtpsUser();
+    String pwd = achInfoObj.getFtpsPassword();
+    String remotePath = achInfoObj.getFtpsPath(); // get the remote file path
+    String localPath = file.getFilePath(); // get the file local path
+
+    // check that if file separator is attached at the end of the paths
+
+
+    // check that if file separator is attached at the end of the paths
+    if (localPath != null && !localPath.endsWith(java.io.File.separator)) {
+      localPath = localPath + java.io.File.separator;
+    }
+
+    try {
+      ftp.putFile(host, port, user, pwd, remotePath, file.getFileName(),
+                  localPath, file.getFileName());
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                                     " File Put Successfully----->" +
+                                     file.getFileName());
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHSFTPHandler --- Method Name---> uploadFiles --- Exception in Uploading File (Cannot connect to SFTP site) ---> " + ex);
+      throw new ProcessValuesExcep( -1,
+                                   "Unable to upload file using SFTP Site---> " +
+                                   ex);
+    }
+    finally {
+
+    }
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                                   " <----Exiting method putFileWithSftp----->");
+  }
+
+  private void sendProcessedFilesEmail(Vector fileList, String dbInstanceName) throws
+      MissingValueExcep {
+    Vector emailInfo = null;
+    String message = null;
+    String toEmails = null;
+    String fromEmail = null;
+    String subject = null;
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- IN the method of sending processed files emails");
+
+    if (achInfoObj.getToEmailAddress() != null) {
+      toEmails = achInfoObj.getToEmailAddress();
+    }
+    else {
+      throw new MissingValueExcep( -1, "To Email Address value Missing");
+    }
+    if (dbInstanceName == null) {
+      throw new MissingValueExcep( -1, "Instance name value missing");
+    }
+    subject = dbInstanceName + " " + Constants.ACH_FTPS_MAIL_SUBJECT;
+    emailInfo = buildProcessedFilesMessage(fileList);
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Returned form buildProcessedFilesMessage--- Mail info vector size--->" +
+                                   emailInfo.size());
+    message = emailInfo.lastElement().toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail Message --->" +
+                                   message);
+    fromEmail = emailInfo.elementAt(0).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail From --->" +
+                                   fromEmail);
+
+    try {
+      AdminMailService mail = new AdminMailService(message, subject, toEmails,
+          fromEmail);
+      mail.start();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> sendProcessedFilesEmail --- Exception in sending processed files mail ---> " + ex);
+    }
+  }
+
+  private void sendFailedFilesEmail(Vector fileList) {
+    Vector emailInfo = null;
+    String message = null;
+    String toEmails = null;
+    String fromEmail = null;
+    String subject = null;
+
+    emailInfo = buildFailedFilesMessage(fileList);
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Returned form buildFailedFilesMessage--- Mail info vector size--->" +
+                                   emailInfo.size());
+    fromEmail = emailInfo.elementAt(0).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail fromEmail --->" +
+                                   fromEmail);
+    toEmails = emailInfo.elementAt(1).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail toEmails --->" +
+                                   toEmails);
+    subject = emailInfo.elementAt(3).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail subject --->" +
+                                   subject);
+    message = emailInfo.lastElement().toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " ACHFTPSHandler --- Mail Message --->" +
+                                   message);
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- IN the method of sending failed files emails");
+
+    try {
+      AdminMailService mail = new AdminMailService(message, subject, toEmails,
+          fromEmail);
+      mail.start();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> sendFailedFilesEmail --- Exception in sending processed files mail ---> " + ex);
+    }
+  }
+
+  private void sendFailedPlaceFilesEmail(String message, Vector mailInfo) {
+    String subject = null;
+    String toEmail = null;
+    String fromEmail = null;
+
+    fromEmail = mailInfo.elementAt(0).toString();
+    toEmail = mailInfo.elementAt(1).toString();
+    subject = mailInfo.elementAt(3).toString();
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST), " ACHFTPSHandler --- IN the method of sending emails about failure in placing processed files");
+
+    try {
+      AdminMailService mail = new AdminMailService(message, subject, toEmail,
+          fromEmail);
+      mail.start();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> sendFailedPlaceFilesEmail --- Exception in sending processed files mail ---> " + ex);
+    }
+  }
+
+  private Vector buildProcessedFilesMessage(Vector fileList) {
+    FileStatisticsObj file = null;
+    StringBuffer message = new StringBuffer();
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- IN the method of building message of processed files email");
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email ID--->" +
+                                   Constants.ACH_FTPS_SUCCESS +
+                                   " Instance Name--->" + instanceName);
+    Vector info = CommonUtilities.getMailInfo(Constants.ACH_FTPS_SUCCESS,
+                                              dbConn);
+
+    String email_from = info.elementAt(0).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email From--->" +
+                                   email_from);
+    String email_to = info.elementAt(1).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email To--->" +
+                                   email_to);
+    String email_cc = info.elementAt(2).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email CC--->" +
+                                   email_cc);
+    String email_subject = info.elementAt(3).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Subject--->" +
+                                   email_subject);
+    String email_hdr = info.elementAt(4).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Hdr--->" +
+                                   email_hdr);
+    String email_msg = info.elementAt(5).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Msg--->" +
+                                   email_msg);
+    String email_ftr = info.elementAt(6).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Ftr--->" +
+                                   email_ftr);
+
+    String[] msgArray = CommonUtilities.convertStringArray(email_msg,
+        Constants.MAIL_DELIMETER_STRING);
+    //------------------- Message
+    message.append("\n\n" + achInfoObj.getAchODFIDesc() + " " + email_hdr);
+    message.append("\n\n" + msgArray[0] + " " + achInfoObj.getAchODFIDesc() +
+                   " " + msgArray[1] + " " +
+                   CommonUtilities.
+                   getDateTimeInDifferentTimeZone(Constants.CST_TIME_ZONE,
+                                                  Constants.
+                                                  ACH_DATE_TIME_FORMAT,
+                                                  Constants.US_LOCALE,
+                                                  Constants.US_LANGUAGE) + " " +
+                   msgArray[2]);
+
+    for (int i = 0; i < fileList.size(); i++) {
+      //--------------------File Info
+      file = (FileStatisticsObj) fileList.elementAt(i);
+      message.append("\n\n" + Constants.ACH_FILE_NAME + " " + file.getFileName());
+      message.append("\n" + Constants.ACH_TOTAL_BATACH + " " +
+                     file.getTotalBatches());
+      message.append("\n" + Constants.ACH_TOTAL_CREDIT_AMOUNT + " " +
+                     file.getTotalCrAmount());
+      message.append("\n" + Constants.ACH_TOTAL_DEBIT_AMOUNT + " " +
+                     file.getTotalDrAmount());
+    }
+
+    //---------------Footer
+    message.append("\n\n\n" + email_ftr);
+    info.add(message.toString());
+    return info;
+  }
+
+  private Vector buildFailedFilesMessage(Vector fileList) {
+    String failedMessage = null;
+    StringBuffer message = new StringBuffer();
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- IN the method of building message of failed files email");
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email ID--->" +
+                                   Constants.ACH_FTPS_FF_ERROR +
+                                   " Instance Name--->" + instanceName);
+    Vector info = CommonUtilities.getMailInfo(Constants.ACH_FTPS_FF_ERROR,
+                                              dbConn);
+
+    String email_from = info.elementAt(0).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email From--->" + email_from);
+    String email_to = info.elementAt(1).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email To--->" + email_to);
+    String email_cc = info.elementAt(2).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email CC--->" + email_cc);
+    String email_subject = info.elementAt(3).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Subject--->" + email_subject);
+    String email_hdr = info.elementAt(4).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Hdr--->" + email_hdr);
+    String email_msg = info.elementAt(5).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Msg--->" + email_msg);
+    String email_ftr = info.elementAt(6).toString();
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Ftr--->" + email_ftr);
+
+    email_hdr = CommonUtilities.emailTokenizer(email_hdr,
+                                               Constants.MAIL_MSG_DELIMETER_STRING);
+
+    //------------------- Header
+    message.append("\n\n" + email_hdr + " " + achInfoObj.getAchODFIDesc() + " " +
+                   email_msg);
+    //--------------------Body
+    message.append("\n\n");
+
+    for (int i = 0; i < fileList.size(); i++) {
+      //Exception Message
+      failedMessage = (String) fileList.elementAt(i);
+      message.append(failedMessage);
+    }
+
+    //---------------Footer
+    message.append("\n\n\n" + email_ftr);
+    info.add(message.toString());
+    return info;
+  }
+
+  private boolean placeProcessedFiles(Vector processedFiles,
+                                      String dbInstanceName) throws
+      MissingValueExcep {
+    boolean flag = false;
+    long numFiles = processedFiles.size();
+    StringBuffer message = new StringBuffer();
+    Vector mailInfo = null;
+
+    DbConnectionInfoObj connObj = (DbConnectionInfoObj) LoadProperties.
+        instanceConnectionsTable.get(instanceName);
+
+    String sourceFilePath = null;
+    String destinationFilePath = null;
+
+    File sFile = null;
+    File dFile = null;
+    FileStatisticsObj processedFileInfo = null;
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHFTPSHandler --- IN the method of placing processed files");
+
+    try {
+      for (int i = 0; i < numFiles; i++) {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+            "--- ACHFTPSHandler  --- placeProcessedFiles --- Files to place--->" +
+                                       numFiles);
+        processedFileInfo = (FileStatisticsObj) processedFiles.elementAt(i);
+        if (dbInstanceName != null && dbInstanceName.trim().length() > 0) {
+          try {
+            sourceFilePath = processedFileInfo.getFilePath() + File.separator +
+                processedFileInfo.getFileName();
+            destinationFilePath = connObj.getAchOutputPath() + File.separator +
+                Constants.ACH_MOVE_SENT_DIR;
+
+            sFile = new File(sourceFilePath);
+            dFile = new File(destinationFilePath);
+
+            if (!dFile.exists()) {
+              if (!dFile.mkdirs()) {
+                CommonUtilities.getLogger(instanceName, Constants.ACH_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "--- ACHFTPSHandler  --- placeProcessedFiles --- File --- " +
+                        destinationFilePath +
+                        " The specified directory cannot be created");
+              }
+            }
+
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "--- ACHFTPSHandler  --- placeProcessedFiles --- Source File Path --- " +
+                sourceFilePath + "--- Destination File Path ---" +
+                destinationFilePath);
+
+            if (!sFile.renameTo(new File(dFile, processedFileInfo.getFileName()))) {
+              CommonUtilities.getLogger(instanceName, Constants.ACH_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                  "--- ACHFTPSHandler  --- placeProcessedFiles --- File --- " +
+                      sourceFilePath + " ---This file cannot be placed---");
+              flag = false;
+              mailInfo = CommonUtilities.getMailInfo(Constants.
+                  ACH_FTPS_PF_ERROR, dbConn);
+              String hdr = CommonUtilities.emailTokenizer(mailInfo.elementAt(4).
+                  toString(), Constants.MAIL_MSG_DELIMETER_STRING);
+              message.append(hdr);
+              message.append(":\n\n File Name:" + processedFileInfo.getFileName());
+              sendFailedPlaceFilesEmail(message.toString(), mailInfo);
+            }
+            else {
+              flag = true;
+            }
+          }
+          catch (Exception ex) {
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_WARNING),
+                " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Exception in Placing the Processed File--->" + sourceFilePath +
+                "  ---> " + ex);
+            flag = false;
+          }
+          finally {
+          }
+        }
+        else {
+          throw new MissingValueExcep( -1,
+              "Instance Name value is null in system_variables");
+        }
+      }
+    }
+    catch (Exception e) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " ACHFTPSHandler --- Method Name---> placeProcessedFiles --- Exception in Placing Files ---> " + e);
+      flag = false;
+    }
+    return flag;
+  } // End Method
+
+} // End Class

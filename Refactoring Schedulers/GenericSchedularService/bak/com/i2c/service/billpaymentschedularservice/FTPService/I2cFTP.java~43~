@@ -1,0 +1,246 @@
+package com.i2c.service.billpaymentschedularservice.FTPService;
+
+import java.io.*;
+import com.enterprisedt.net.ftp.FTPClient;
+import com.enterprisedt.net.ftp.FTPMessageCollector;
+import com.enterprisedt.net.ftp.FTPTransferType;
+import com.enterprisedt.net.ftp.FTPConnectMode;
+import com.enterprisedt.util.debug.Level;
+import com.enterprisedt.util.debug.Logger;
+import com.enterprisedt.net.ftp.FTPException;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author Haroon ur Rashid Abbasi
+ * @version 1.0
+ */
+public class I2cFTP {
+
+  private FTPClient ftp = null;
+  private String ftpAddress = null;
+  private int ftpPort = 21;
+  private String ftpUser = null;
+  private String ftpPassword = null;
+  private String ftpPath = null;
+
+  private static Logger log = Logger.getLogger(I2cFTP.class);
+  FTPMessageCollector listener = null;
+
+  public I2cFTP() {
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:22:53 AM
+   *
+   */
+
+  public I2cFTP(String ftpAddress, int ftpPort, String ftpUser,
+                String ftpPassword, String ftpPath) {
+    this.ftpAddress = ftpAddress;
+    this.ftpPort = ftpPort;
+    this.ftpUser = ftpUser;
+    this.ftpPassword = ftpPassword;
+    this.ftpPath = ftpPath;
+  }
+
+  public I2cFTP(String ftpAddress, String ftpPort, String ftpUser,
+                String ftpPassword, String ftpPath) {
+    this.ftpAddress = ftpAddress;
+    this.ftpPort = Integer.parseInt(ftpPort.trim());
+    this.ftpUser = ftpUser;
+    this.ftpPassword = ftpPassword;
+    this.ftpPath = ftpPath;
+  }
+
+  public I2cFTP(FTPInfoVO ftpVo) {
+    this.ftpAddress = ftpVo.getFtpAddress();
+    this.ftpPort = Integer.parseInt(ftpVo.getFtpPort().trim());
+    this.ftpUser = ftpVo.getFtpUserId();
+    this.ftpPassword = ftpVo.getFtpPassword();
+    this.ftpPath = ftpVo.getFtpRemotePath();
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:23:11 AM
+   * @param ftpAddress
+   * @param ftpPort
+   * @param strUser
+   * @param strPassword
+   * @return
+   * @throws IOException
+   */
+  public boolean connect() throws IOException, Exception {
+    boolean istrue = false;
+    try {
+      Logger.setLevel(Level.ALL);
+      // set up client
+      ftp = new FTPClient();
+      ftp.setRemoteHost(ftpAddress);
+      ftp.setRemotePort(ftpPort);
+
+      listener = new FTPMessageCollector();
+      ftp.setMessageListener(listener);
+      //ftp.setAutoPassiveIPSubstitution(true);
+
+      // connect
+      log.info("Connecting");
+      ftp.connect();
+
+      log.info("****FTP Connection successfull*****");
+
+//      if ((ftpUser == null || ftpUser != "") && (ftpPassword == null || ftpPassword != "")) {
+      ftp.login(ftpUser, ftpPassword);
+//      }
+      // set up passive ASCII transfers
+      log.debug("Setting up passive, ASCII transfers");
+      ftp.setConnectMode(FTPConnectMode.PASV);
+      ftp.setType(FTPTransferType.BINARY);
+
+      if (ftpPath == null || ftpPath != "") {
+        ftp.chdir(ftpPath);
+      }
+      istrue = true;
+    }
+    catch (FTPException fex) {
+      log.error("FTPException in i2cFTP Connect" + fex.toString());
+      fex.printStackTrace();
+      throw fex;
+    }
+    catch (IOException ioe) {
+      log.error("IOException in i2cFTP Connect" + ioe.toString());
+      ioe.printStackTrace();
+      throw ioe;
+    }
+    catch (Exception ex) {
+      log.error("****i2cFTP Connection FAILED*****" +
+                "\nException:FTP Connection FAILED. due to Net Work Problem: Connect @JFTP");
+      ex.printStackTrace();
+      throw ex;
+    }
+    return istrue;
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:23:25 AM
+   *
+   */
+  public void disconnect() throws FTPException, IOException {
+    if (ftp != null) {
+      log.info("Quitting client");
+      try {
+        ftp.quit();
+
+        String messages = listener.getLog();
+        log.debug("Listener log:");
+        log.debug(messages);
+
+      }
+      catch (FTPException fex) {
+        log.error("FTPException in i2cFTP Disconnect" + fex.toString());
+        fex.printStackTrace();
+        throw fex;
+      }
+      catch (IOException ioe) {
+        log.error("IOException in i2cFTP Disconnect" + ioe.toString());
+        ioe.printStackTrace();
+        throw ioe;
+      }
+    }
+    log.info("Disconnect Successful....");
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:24:18 AM
+   * @param strPath
+   * @return
+   * @throws IOException
+   */
+  public boolean upload(String localPath, String ftpFileName) throws
+      IOException, Exception {
+    boolean isUploaded = false;
+    log.debug("Start Upload File @i2cFTP");
+    // check if connected
+    if (ftp == null) {
+      return isUploaded;
+    }
+
+    if (!ftp.connected()) {
+      return isUploaded;
+    }
+    log.debug("Connected with FTP site");
+    try {
+      // copy file to server
+      log.info("<---->UPLOAD<--->Putting file at : " + ftp.pwd() + " from " + localPath);
+      ftp.put(localPath, ftpFileName);
+      isUploaded = true;
+    }
+    catch (IOException ioe) {
+      log.error("General exception = " + ioe);
+      isUploaded = false;
+      throw ioe;
+    }
+    catch (Exception e) {
+      log.error("General exception = " + e);
+      isUploaded = false;
+      throw e;
+    }
+    return isUploaded;
+  }
+
+  /**
+   *
+   * @author Haroon ur Rashid Abbasi
+   * Created @ Sep 18, 2005 11:25:53 AM
+   * @param strFile
+   * @return
+   * @throws IOException
+   */
+  public boolean download(String localPath, String ftpFileName) throws
+      IOException, FTPException {
+    boolean isDownloaded = false;
+    log.debug("Download File @FTP");
+    // check if connected
+    if (ftp == null) {
+      return isDownloaded;
+    }
+
+    if (!ftp.connected()) {
+      return isDownloaded;
+    }
+    log.debug("Connected with FTP site");
+    try {
+      // copy file from server
+      log.info("<---->Downloading<-----> File from : " + ftp.pwd() + " to " + localPath);
+      ftp.get(localPath, ftpFileName);
+      isDownloaded = true;
+    }
+    catch (FTPException ftpe) {
+      log.error("General exception = " + ftpe);
+      isDownloaded = false;
+      throw ftpe;
+    }
+
+    catch (IOException ioe) {
+      log.error("General exception = " + ioe);
+      isDownloaded = false;
+      throw ioe;
+    }
+    return isDownloaded;
+
+  }
+}

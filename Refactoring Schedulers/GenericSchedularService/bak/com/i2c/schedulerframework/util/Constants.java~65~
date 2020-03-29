@@ -1,0 +1,284 @@
+package com.i2c.schedulerframework.util;
+
+import com.i2c.schedulerframework.model.DbConfigBean;
+
+//import com.i2c.billpaymentschedularservice.main.ServiceMain;
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2003</p>
+ * <p>Company: </p>
+ * @author Haroon ur Rashid Abbasi
+ * @version 1.0
+ */
+
+public class Constants {
+
+  public static DbConfigBean CARD_INSTANCE_DB_CONN = null;
+
+  public static String COMMON_LOG_INFO = "common";
+
+  public static String CARDS_PATH = "D:\\mcp";
+
+  /********** Date Formats to be used in the application *****************/
+  public static String DATE_FORMAT = "yyyy-MM-dd";
+  public static String DATE_FORMAT_DISPLAY = "yyyy-mm-dd";
+  public static String ACH_DATE_FORMAT = "MM/dd/yyyy";
+  public static String MAIL_DATE_FORMAT = "MMMM dd, yyyy";
+  public static String TIME_FORMAT = "HH:mm:ss";
+  public static String TIME_FORMAT_DISPLAY = "hh:mm:ss";
+
+  //------------------------- Time formats -----------------------//
+  public static String ACH_DATE_TIME_FORMAT = "MM/dd/yyyy HH:mm:ss";
+  public static String US_LOCALE = "US";
+  public static String US_LANGUAGE = "EN";
+  public static String CST_TIME_ZONE = "CST";
+
+  public static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+  public static String ALERT_DATE_TIME_FORMAT = "dd/MM/yy HH:mm";
+  public static String EOD_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+  public static String EOD_TIME_FORMAT = "HH:mm:ss";
+  public static String EOD_TIME_FORMAT_MIN = "HH:mm";
+//  public static String DATE_TIME_FORMAT = "MM-dd-yyyy hh:mm:ss";
+  public static String FILE_DATE_TIME_FORMAT = "MMddyyyy_hhmmss";
+  public static String FILE_DATE_FORMAT = "MMddyyyy";
+  public static String TRUE_OPTION = "Y";
+  public static int DEFAULT_CARD_NUMBER_STRING = 0;
+  public static int DEFAULT_CARD_START_NUMBER_PADDING = 0;
+  public static int DEFAULT_CARD_END_NUMBER_PADDING = 9;
+  // common util
+  public static String CHECK_DIGIT_STRING = "2121212121212121212";
+  // baseDAO
+  public static String SERIAL_QUERY = " select dbinfo('sqlca.sqlerrd1') from ";
+  public static String INSERT_QUERY_INTO_VALUE = "into";
+  public static String INSERT_QUERY_COLUMN_START_VALUE = "(";
+
+  //File Download Constants
+  public static String STREAM_CONTENT_TYPE = "application/octet-stream";
+
+  // General use parameters
+  public static String IS_TRUE="Y";
+  public static String IS_FALSE="N";
+
+  public static final String YES_OPTION = "Y";
+  public static final String NO_OPTION = "N";
+
+  //------------ STATUS VARIABLES -----------------//
+  public static String STATUS_TO_BE_SEND = "T";
+  public static String STATUS_SEND = "S";
+  public static String STATUS_IN_PROGRESS = "I";
+  public static String STATUS_FAILED = "F";
+  public static String STATUS_DONE = "D";
+
+  public static String OUTPUT_FILE_HTML = "H";
+  public static String OUTPUT_FILE_PDF = "P";
+  public static String OUTPUT_FILE_XML = "X";
+  public static String OUTPUT_FILE_CSV = "C";
+  public static String OUTPUT_FILE_XL = "E";
+  public static String OUTPUT_FILE_WORD = "W";
+
+  public static String NOTIFY_EMAIL = "E";
+  public static String NOTIFY_FAX = "F";
+  public static String NOTIFY_SMS = "S";
+
+  //---------------------- File Extensions --------------//
+  public static String EXTENSION_FILE_HTML = "html";
+  public static String EXTENSION_FILE_PDF = "pdf";
+  public static String EXTENSION_FILE_XML = "xml";
+  public static String EXTENSION_FILE_XL = "xls";
+  public static String EXTENSION_FILE_CSV = "csv";
+  public static String EXTENSION_FILE_WORD = "doc";
+
+  //------------- ServiceMail Settings ---------------//
+  public static String REPORT_SAVE_PATH = "";
+  public static String REPORT_SERVER_URL = "";
+  public static String REPORT_FILE_TITLE = "Report ";
+  public static String SOURCE_INSTANCE_NAME = "instName";
+  public static String MAIL_REPORT_MESSAGE = "";
+  public static String MAIL_REPORT_ATTACH_MESSAGE = "";
+  public static String MAIL_REPORT_FOOTER_MESSAGE = "";
+  public static String MAIL_REPORT_SUBJECT = "";
+  //Report Admin message
+  public static String MAIL_REPORT_ADMIN_MESSAGE = "";
+  public static String MAIL_REPORT_ADMIN_SUBJECT = "";
+
+  // Email configration constants
+  public static String MAIL_SMTP = null;
+  public static String MAIL_REPORT_FROM = null;
+  public static String MAIL_REPORT_ADMIN = null;
+  public static String MAIL_REPORT_TO = null;
+  public static String MAIL_REPORT_CC = null;
+  public static String MAIL_REPORT_BCC = null;
+  public static String DEFAULT_DELIMETER_STRING = ",";
+  public static String MAIL_DELIMETER_STRING = "|";
+  public static String MAIL_MSG_DELIMETER_STRING = "#";
+  public static String ATTCH_MSG_DELIMETER_STRING = "@";
+  public static String MAIL_ATTCH_MSG_1 = " and is being sent as an attachment with this email";
+  public static String MAIL_ATTCH_MSG_2 = "also ";
+  public static  long MAX_ACTIVE_THREADS = 0;
+  public static  long MAX_REPORT_RETRY = 5;
+
+  //------------------ Admin email parameters -----------------------//
+  public static  long START_REPORT_FAILURE_EMAIL = 5;
+  public static  long START_FAILURE_EMAIL = 0;
+  public static  long MAX_EMAIL_RETRY = 5;
+
+  //-------------------- Output Path ------------------------------//
+
+  public static String OUTPUT_PATH="";
+
+  //------------- use for email --------------------//
+  public static String SMS_CHANNEL = "SMS";
+  public static String EMAIL_CHANNEL = "Email";
+
+  //---------------- Sleep Times ------------------------//
+
+  public static long DEFAULT_WAIT_TIME = 3600000;
+  public static long DEFAULT_SLEEP_TIME = 60000;
+
+  //--------- DB Connection Information -------//
+  public static String DB_CONNECTION_STRING = "";
+  public static String DB_USER_NAME = "";
+  public static String DB_USER_PASSWORD = "";
+  public static String DB_DRIVER_NAME = "";
+
+  //---------- configration File name -------------//
+  public static String CONFIGURATION_FILE = "config.ini";
+
+  //--------------Varibles for the Loggging --------------------//
+  public static String LOG_FILE_PATH = "";
+  public static String LOG_FILE_NAME = "";
+  public static String LOG_CONTEXT_NAME = "com.i2c.schedulerframework";
+
+  public static int LOG_FILE_SIZE = 0;
+  public static int LOG_FILE_NO = 0;
+  public static int LOG_DEBUG_LEVEL = 2;
+
+//  public static int LOG_SEVERE = 1;
+//  public static int LOG_WARNING = 2;
+//  public static int LOG_INFO = 3;
+//  public static int LOG_CONFIG = 4;
+//  public static int LOG_FINE = 5;
+//  public static int LOG_FINER = 6;
+  //  public static int LOG_FINEST = 7;
+
+  //---------------- Monitor Attibutes ------------------------------//
+  public static String ALERT_EMAIL_HDR = "Dear Administrator,";
+  public static String ALERT_EMAIL_MSG = "# Bill Payment Monitor Thread has detected some problem in the execution of # at <#> instance. The # is not responding since # minutes.";
+  public static String ALERT_EMAIL_SUBJECT = "MCP Bill Payment Scheduler Service Monitoring Alert";
+  public static long DEFAULT_ALERT_TIME = 60;
+  public static long MONITOR_SERVICE_SLEEP_TIME = 60;
+
+  //--------------- Schuduler Socket Service Port Number --------------------------//
+  public static int PORT_NUMBER = -1;
+
+  //------------- HSM related Attributes -------------------//
+  public static String HSM_IP = "";
+  public static int HSM_PORT = -1;
+  public static int HSM_INDEX = -1;
+
+
+
+
+
+
+
+
+  /********************* BPayment  ********************************************/
+  public static String PROCESSOR_ID = "1"; //-- Processor ID
+  public static String RESADJ_NO_OF_DAYS = "7"; //-- No of Days for which to Process Response and Adjustment
+  public static String PAYMENT_SERVICE_MONITOR_SERVICE="payment_service_monitor";
+  public static String PAYMENT_SERVICE="payment_service";
+  public static String RESPONSE_SERVICE_MONITOR_SERVICE="response_service_monitor";
+  public static String RESPONSE_SERVICE="response_service";
+  public static String ADJUSTMENT_SERVICE_MONITOR_SERVICE="adjustment_service_monitor";
+  public static String ADJUSTMENT_SERVICE="adjustment_service";
+  public static String PAYEE_SERVICE_MONITOR_SERVICE="payee_service_monitor";
+  public static String PAYEE_SERVICE="payee_service";
+  public static String PAYEE_SERVICE_API="payee_service_api";
+
+  //---------------------- Email IDs ------------------------//
+
+  public static String PAYMENT_SRV = "PAYMENT_SRV";
+  public static String PAYMENT_SRV_FAIL = "PAYMENT_SRV_FAIL";
+  public static String PAYMENT_SRV_SUCC = "PAYMENT_SRV_SUCC";
+  public static String RESPONSE_SRV = "RESPONSE_SRV";
+  public static String RESPONSE_SRV_FAIL = "RESPONSE_SRV_FAIL";
+  public static String RESPONSE_SRV_SUCC = "RESPONSE_SRV_SUCC";
+  public static String RESPONSE_DOWNLOAD_FAIL = "RESPONSE_DL_FAIL";
+  public static String RESPONSE_INFILE_FAIL = "RESPONSE_INFILE_FAIL";
+  public static String ADJUSTMENT_SRV = "ADJUSTMENT_SRV";
+  public static String ADJUSTMENT_SRV_FAIL = "ADJUSTMENT_SRV_FAIL";
+  public static String ADJUSTMENT_SRV_SUCC = "ADJUSTMENT_SRV_SUCC";
+  public static String ADJUSTMENT_DOWNLOAD_FAIL = "ADJUSTMENT_DL_FAIL";
+  public static String ADJUST_INFILE_FAIL = "ADJUST_INFILE_FAIL";
+  public static String PAYEE_SRV = "PAYEE_SRV";
+  public static String PAYEE_SRV_FAIL = "PAYEE_SRV_FAIL";
+  public static String PAYEE_SRV_SUCC = "PAYEE_SRV_SUCC";
+
+  //---------------------- Payment File Processing Status ----------------//
+
+  public static String SENT_PAYMENT_FILE_STATUS = "S";
+
+  // -------------BPScheduler Attributes-------------
+
+  public static String USE_BILL_PAYMENT_PAYEE_PROCESSING="USE_BILL_PAYMENT_PAYEE_PROCESSING";
+  public static String USE_BILL_PAYMENT_PROCESSING="USE_BILL_PAYMENT_PROCESSING";
+  public static String USE_BILL_RESPONSE_PROCESSING="USE_BILL_RESPONSE_PROCESSING";
+  public static String USE_BILL_ADJUSTMENT_PROCESSING="USE_BILL_ADJUSTMENT_PROCESSING";
+
+  //***** Output path for BP Service ********************
+  public static String UPLOAD_FOLDER = "Upload";
+  public static String DOWNLOAD_FOLDER = "Download";
+  public static String PROCESSED_FOLDER = "Processed";
+  public static String SENT_FOLDER = "Sent";
+  public static String ENCRYPT_FOLDER = "Encrypt";
+  public static String DECRYPT_FOLDER = "Decrypt";
+
+
+  public static String PAYEE_OUTPUT_PATH = null;
+  public static String PAYMENT_OUTPUT_PATH = null;
+  public static String RESPONSE_OUTPUT_PATH = null;
+  public static String ADJUSTMENT_OUTPUT_PATH = null;
+  public static String VERIFY_PUBLIC_KEY_PATH = null;
+  public static String ENCRYPT_PUBLIC_KEY_PATH = null;
+  public static String SECRET_KEY_PATH = null;
+  public static String PASS_PHRASE = null;
+  public static String RESPONSE_INFILE_PREFIX = null;
+  public static String ADJUSTMENT_INFILE_PREFIX = null;
+  public static String RES_DECRYPT_INFILE_NAME = null;
+  public static String ADJ_DECRYPT_INFILE_NAME = null;
+
+  public static long PAYEE_SLEEP_TIME = 60000;
+
+  public static String RESADJ_FAIL_EMAIL_SUBJECT = "MCP Bill Payment Scheduler Service Monitoring Alert";
+  /***************************************************************************/
+
+//  public static String[] APPLICATIONS_NAME_ARRAY = {
+//      PAYMENT_SERVICE_MONITOR_SERVICE,
+//      PAYMENT_SERVICE,
+//      RESPONSE_SERVICE_MONITOR_SERVICE,
+//      RESPONSE_SERVICE,
+//      ADJUSTMENT_SERVICE_MONITOR_SERVICE,
+//      ADJUSTMENT_SERVICE,
+//      PAYEE_SERVICE_MONITOR_SERVICE,
+//      PAYEE_SERVICE};
+//
+//
+//
+
+
+
+
+
+
+
+//-------important-----------Transfer Service Verfiy Counter-------------------------//
+
+  public static int VERFIY_DB_COUNTER = 0;
+  public static String ALLOWED_INSTANCES = "";
+
+
+
+
+}// Constants ended

@@ -1,0 +1,472 @@
+package com.i2c.schedulerframework.dao;
+
+import java.util.Vector;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.*;
+import com.i2c.schedulerframework.main.ServiceMain;
+import com.i2c.schedulerframework.util.CommonUtilities;
+import com.i2c.schedulerframework.util.DatabaseConnectionUtil;
+import com.i2c.utils.logging.I2cLogger;
+import com.i2c.schedulerframework.model.EmailContantBean;
+import java.util.ArrayList;
+
+public class MailMsgDAO extends BaseDAO{
+
+  private String emailID = null;
+  private String emailFrom = null;
+  private String emailTo = null;
+  private String emailSubject = null;
+  private String emailMsgHdr = null;
+  private String emailMsgBody = null;
+  private String emailMsgFtr = null;
+
+  public MailMsgDAO(String emailID) {
+    this.emailID = emailID;
+  }
+
+  public boolean executeUpdate(String query) throws Exception {
+    return true;
+  }
+
+  public boolean executeInsert(String query) throws Exception {
+    return true;
+  }
+
+  public ArrayList executeSelect(String query) throws Exception {
+    ArrayList arrayList = null;
+    return arrayList;
+  }
+
+
+
+  public Vector getMailInfo(String instanceName) throws Exception {
+    Vector mailInfo = new Vector();
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+
+    StringBuffer query = new StringBuffer();
+
+    try {
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo] Method for getting Email info for ID-->" +
+                                 emailID + "<--InstanceName-->" + instanceName);
+      query.append("select * from emails where email_id = ");
+      CommonUtilities.buildQueryInfo(query, emailID, true);
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo] Query for getting Email info--->" +
+                                 query);
+      dbConn = DatabaseConnectionUtil.getConnection("MailMsgDAO", instanceName);
+      stmt = dbConn.createStatement();
+      rs = stmt.executeQuery(query.toString());
+
+      if (rs.next()) {
+        if (rs.getString("email_add_from") != null &&
+            rs.getString("email_add_from").trim().length() > 0) {
+          emailFrom = rs.getString("email_add_from").trim();
+        }
+        if (rs.getString("email_address") != null &&
+            rs.getString("email_address").trim().length() > 0) {
+          emailTo = rs.getString("email_address").trim();
+        }
+        if (rs.getString("email_subject") != null &&
+            rs.getString("email_subject").trim().length() > 0) {
+          emailSubject = rs.getString("email_subject").trim();
+        }
+        if (rs.getString("email_msg_hd1") != null &&
+            rs.getString("email_msg_hd1").trim().length() > 0) {
+          emailMsgHdr = rs.getString("email_msg_hd1").trim();
+        }
+        if (rs.getString("email_msg_hd2") != null &&
+            rs.getString("email_msg_hd2").trim().length() > 0) {
+          emailMsgBody = rs.getString("email_msg_hd2").trim();
+        }
+        if (rs.getString("email_msg_hd3") != null &&
+            rs.getString("email_msg_hd3").trim().length() > 0) {
+          emailMsgFtr = rs.getString("email_msg_hd3").trim();
+        }
+        if (emailFrom != null && emailTo != null) {
+          mailInfo.add(emailFrom);
+          mailInfo.add(emailTo);
+          mailInfo.add(emailSubject);
+          mailInfo.add(emailMsgHdr);
+          mailInfo.add(emailMsgBody);
+          mailInfo.add(emailMsgFtr);
+        }
+      }
+      else {
+        ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                   "[MailMsgDAO].[getMailInfo] No Email info found for given email ID --->" +
+                                   emailID);
+        throw new Exception("[MailMsgDAO].[getMailInfo] Unable to find email information from 'emails' table for provided emailID--->" +
+                            emailID);
+      }
+    }
+    catch (Exception ex) {
+      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+                                 "[MailMsgDAO].[getMailInfo] Exception in getting mail info --->" +
+                                 ex);
+      throw new Exception(
+          "[MailMsgDAO].[getMailInfo] Exception in getting mail info --->" + ex);
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (stmt != null) {
+          stmt.close();
+        }
+        if (dbConn != null) {
+          dbConn.close();
+        }
+      }
+      catch (SQLException ex1) {
+      }
+    }
+    return mailInfo;
+  }
+
+  public Vector getMailInfo(Connection dbConn) throws Exception {
+    Vector mailInfo = new Vector();
+    Statement stmt = null;
+    ResultSet rs = null;
+
+    StringBuffer query = new StringBuffer();
+
+    try {
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo] Method for getting Email info for ID-->" +
+                                 emailID);
+      query.append("select * from emails where email_id = ");
+      CommonUtilities.buildQueryInfo(query, emailID, true);
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo] Query for getting Email info--->" +
+                                 query);
+
+      stmt = dbConn.createStatement();
+      rs = stmt.executeQuery(query.toString());
+
+      if (rs.next()) {
+        if (rs.getString("email_add_from") != null &&
+            rs.getString("email_add_from").trim().length() > 0) {
+          emailFrom = rs.getString("email_add_from").trim();
+        }
+        if (rs.getString("email_address") != null &&
+            rs.getString("email_address").trim().length() > 0) {
+          emailTo = rs.getString("email_address").trim();
+        }
+        if (rs.getString("email_subject") != null &&
+            rs.getString("email_subject").trim().length() > 0) {
+          emailSubject = rs.getString("email_subject").trim();
+        }
+        if (rs.getString("email_msg_hd1") != null &&
+            rs.getString("email_msg_hd1").trim().length() > 0) {
+          emailMsgHdr = rs.getString("email_msg_hd1").trim();
+        }
+        if (rs.getString("email_msg_hd2") != null &&
+            rs.getString("email_msg_hd2").trim().length() > 0) {
+          emailMsgBody = rs.getString("email_msg_hd2").trim();
+        }
+        if (rs.getString("email_msg_hd3") != null &&
+            rs.getString("email_msg_hd3").trim().length() > 0) {
+          emailMsgFtr = rs.getString("email_msg_hd3").trim();
+        }
+        if (emailFrom != null && emailTo != null) {
+          mailInfo.add(emailFrom);
+          mailInfo.add(emailTo);
+          mailInfo.add(emailSubject);
+          mailInfo.add(emailMsgHdr);
+          mailInfo.add(emailMsgBody);
+          mailInfo.add(emailMsgFtr);
+        }
+      }
+      else {
+        ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                   "[MailMsgDAO].[getMailInfo] No Email info found for given email ID --->" +
+                                   emailID);
+        throw new Exception("[MailMsgDAO].[getMailInfo] Unable to find email information from 'emails' table for provided emailID--->" +
+                            emailID);
+      }
+    }
+    catch (Exception ex) {
+      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+                                 "[MailMsgDAO].[getMailInfo] Exception in getting mail info --->" +
+                                 ex);
+      throw new Exception(
+          "[MailMsgDAO].[getMailInfo] Exception in getting mail info --->" + ex);
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (stmt != null) {
+          stmt.close();
+        }
+      }
+      catch (SQLException ex1) {
+      }
+    }
+    return mailInfo;
+  }
+
+  public static Vector getMailInfo(String mailID, String instanceName) {
+    Vector info = new Vector();
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    StringBuffer query = new StringBuffer();
+
+    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                               "[MailMsgDAO].[getMailInfo(mailId, instanceName)] Argument List --- Mail ID--->" +
+                               mailID + " Instance Name-->" + instanceName);
+    try {
+      query.append("select * from emails where email_id = '");
+      query.append(mailID);
+      query.append("'");
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo(mailId, instanceName)] Query for getting Email Info --->" +
+                                 query.toString());
+      dbConn = DatabaseConnectionUtil.getConnection("MailMsgDAO", instanceName);
+      stmt = dbConn.createStatement();
+      rs = stmt.executeQuery(query.toString());
+
+      if (rs.next()) {
+        if (rs.getString("email_add_from") != null) {
+          info.add(rs.getString("email_add_from").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_address") != null) {
+          info.add(rs.getString("email_address").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_add_cc") != null) {
+          info.add(rs.getString("email_add_cc").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_subject") != null) {
+          info.add(rs.getString("email_subject").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd1") != null) {
+          info.add(rs.getString("email_msg_hd1").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd2") != null) {
+          info.add(rs.getString("email_msg_hd2").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd3") != null) {
+          info.add(rs.getString("email_msg_hd3").trim());
+        }
+        else {
+          info.add("");
+        }
+      } // end main if
+      // Closing rs and stmt
+      rs.close();
+      stmt.close();
+    } // end try
+    catch (Exception ex) {
+      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+                                 "[MailMsgDAO].[getMailInfo(mailId, instanceName)] Exception in getting mail info from Database--->" +
+                                 ex);
+    }
+    finally {
+      if (dbConn != null) {
+        try {
+          DatabaseConnectionUtil.returnConnection("MailMsgDAO", dbConn);
+        }
+        catch (Exception ex) {
+
+        }
+      }
+    }
+    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                               "[MailMsgDAO].[getMailInfo(mailId, instanceName)] Email Info Result Size --->" +
+                               info.size());
+    return info;
+  }
+
+  public static EmailContantBean getMailInfo(Connection dbConn, String mailID) {
+    EmailContantBean mailObj = null;
+    PreparedStatement pstmt = null;
+    ResultSet rs = null;
+    StringBuffer query = new StringBuffer();
+    try {
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo-EmailContantBean] Argument List --- Mail ID--->" +
+                                 mailID);
+      mailObj = new EmailContantBean();
+      query.append("select * from emails where email_id = ? ");
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo-EmailContantBean] Query for getting Email Info --->" +
+                                 query);
+      pstmt = dbConn.prepareStatement(query.toString());
+      pstmt.setString(1, mailID);
+      rs = pstmt.executeQuery();
+
+      if (rs.next()) {
+
+        String emailFrom = rs.getString("email_add_from");
+        if (emailFrom != null && emailFrom.trim().length() > 0) {
+          mailObj.setEmailFrom(emailFrom);
+        }
+
+        String emailTo = rs.getString("email_address");
+        if (emailTo != null && emailTo.trim().length() > 0) {
+          mailObj.setEmailTo(emailTo);
+        }
+
+        String emailCC = rs.getString("email_add_cc");
+        if (emailCC != null && emailCC.trim().length() > 0) {
+          mailObj.setEmailCC(emailCC);
+        }
+
+        String emailSubject = rs.getString("email_subject");
+        if (emailSubject != null && emailSubject.trim().length() > 0) {
+          mailObj.setEmailSubject(emailSubject);
+        }
+
+        String emailHdr = rs.getString("email_msg_hd1");
+        if (emailHdr != null && emailHdr.trim().length() > 0) {
+          mailObj.setEmailHeader(emailHdr);
+        }
+
+        String emailBdy = rs.getString("email_msg_hd2");
+        if (emailBdy != null && emailBdy.trim().length() > 0) {
+          mailObj.setEmailBody(emailBdy);
+        }
+
+        String emailFtr = rs.getString("email_msg_hd3");
+        if (emailFtr != null && emailFtr.trim().length() > 0) {
+          mailObj.setEmailFooter(emailFtr);
+        }
+      }
+    }
+    catch (Exception ex) {
+      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+                                 "[MailMsgDAO].[getMailInfo-EmailContantBean] Exception in getting mail info from Database--->" +
+                                 ex);
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (pstmt != null) {
+          pstmt.close();
+        }
+      }
+      catch (Exception ex) {
+      }
+    }
+    return mailObj;
+  }
+
+  public static Vector getMailInfo(String mailID, Connection dbConn) {
+    Vector info = new Vector();
+    Statement stmt = null;
+    ResultSet rs = null;
+    StringBuffer query = new StringBuffer();
+
+    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                               "[MailMsgDAO].[getMailInfo-Vector] Argument List --- Mail ID--->" +
+                               mailID);
+    try {
+      query.append("select * from emails where email_id = '");
+      query.append(mailID);
+      query.append("'");
+      ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                                 "[MailMsgDAO].[getMailInfo-Vector] Query for getting Email Info --->" +
+                                 query.toString());
+      stmt = dbConn.createStatement();
+      rs = stmt.executeQuery(query.toString());
+
+      if (rs.next()) {
+        if (rs.getString("email_add_from") != null) {
+          info.add(rs.getString("email_add_from").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_address") != null) {
+          info.add(rs.getString("email_address").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_add_cc") != null) {
+          info.add(rs.getString("email_add_cc").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_subject") != null) {
+          info.add(rs.getString("email_subject").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd1") != null) {
+          info.add(rs.getString("email_msg_hd1").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd2") != null) {
+          info.add(rs.getString("email_msg_hd2").trim());
+        }
+        else {
+          info.add("");
+        }
+        if (rs.getString("email_msg_hd3") != null) {
+          info.add(rs.getString("email_msg_hd3").trim());
+        }
+        else {
+          info.add("");
+        }
+      } // end main if
+      // Closing rs and stmt
+      rs.close();
+      stmt.close();
+    } // end try
+    catch (Exception ex) {
+      ServiceMain.mainLogger.log(I2cLogger.WARNING,
+                                 "[MailMsgDAO].[getMailInfo-Vector] Exception in getting mail info from Database--->" +
+                                 ex);
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (stmt != null) {
+          stmt.close();
+        }
+      }
+      catch (SQLException ex1) {
+      }
+    }
+    ServiceMain.mainLogger.log(I2cLogger.FINEST,
+                               "[MailMsgDAO].[getMailInfo-Vector] Email Info Result Size --->" +
+                               info.size());
+    return info;
+  }
+
+}

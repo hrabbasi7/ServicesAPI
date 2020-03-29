@@ -1,0 +1,9 @@
+[PropertyInfo]
+codeChildId,String,false,false,childId,childId,true,<default>
+codeMask,String,false,false,codeMask,codeMask,true,<default>
+codeFieldLength,String,false,false,fieldLength,fieldLength,true,<default>
+[IconNames]
+
+
+
+

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refactor PUBLIC "-//Borland Software Corporation//Refactor 1.0//EN" "http://www.borland.com/devsupport/jbuilder/dtds/refactor_1_0.dtd">
+
+<refactor>
+  <rename-package id="7AP00IFLYKVE8LYJJIX0QKH0" creation-time="Mon Dec 11 19:06:20.073 PKT 2006">
+    <old-package-name>com.i2c.billpaymentschedularservice.bean</old-package-name>
+    <new-package-name>com.i2c.billpaymentschedularservice.model</new-package-name>
+  </rename-package>
+  <rename-class id="6AP00IFLYKVE8LYJJIX0QKH0" creation-time="Mon Dec 11 19:07:28.446 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.util.MailInfoObj</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.util.MailInfoVO</new-class-name>
+  </rename-class>
+  <rename-class id="5AP00IFLYKVE8LYJJIX0QKH0" creation-time="Mon Dec 11 19:17:29.068 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.util.DbConnectionInfoObj</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.util.DbConnectionInfoVO</new-class-name>
+  </rename-class>
+  <rename-class id="7AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 12:46:50.376 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.model.DbConnectionInfoVO</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.model.DbConfigBean</new-class-name>
+  </rename-class>
+  <rename-class id="6AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 12:47:49.452 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.model.MailInfoVO</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.model.EmailContantBean</new-class-name>
+  </rename-class>
+  <rename-class id="5AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 13:12:48.898 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.model.Untitled1</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.model.EmailConfigBean</new-class-name>
+  </rename-class>
+  <rename-class id="4AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 19:23:16.850 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.dao.BaseHome</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.dao.BaseDAO</new-class-name>
+  </rename-class>
+  <rename-class id="3AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 21:03:58.653 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.main.SchedulerSocketService</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.main.StatusInformer</new-class-name>
+  </rename-class>
+  <rename-class id="2AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 21:10:54.776 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.util.DatabaseHandler</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.util.DatabaseConnectionUtil</new-class-name>
+  </rename-class>
+  <rename-class id="1AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 22:08:29.574 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.monitor.PayeeServiceMonitor</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.monitor.HangNotifier</new-class-name>
+  </rename-class>
+  <rename-class id="0AP0A9D4LUVEOGU9IX0QKH0" creation-time="Mon Dec 18 22:09:41.514 PKT 2006">
+    <old-class-name>com.i2c.billpaymentschedularservice.monitor.HangNotifier</old-class-name>
+    <new-class-name>com.i2c.billpaymentschedularservice.monitor.SchedulerHangNotifier</new-class-name>
+  </rename-class>
+  <rename-package id="7AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Thu Dec 21 14:47:26.218 PKT 2006">
+    <old-package-name>com.i2c.billpaymentschedularservice</old-package-name>
+    <new-package-name>com.i2c.genericschedulerframework</new-package-name>
+  </rename-package>
+  <rename-package id="6AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Thu Dec 21 14:49:15.890 PKT 2006">
+    <old-package-name>com.i2c.genericschedulerframework</old-package-name>
+    <new-package-name>com.i2c.schedulerframework</new-package-name>
+  </rename-package>
+  <rename-class id="5AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Fri Dec 22 12:53:38.671 PKT 2006">
+    <old-class-name>com.i2c.schedulerframework.util.Constants</old-class-name>
+    <new-class-name>com.i2c.schedulerframework.util.BaseConstants</new-class-name>
+  </rename-class>
+  <rename-class id="4AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Tue Dec 26 22:44:17.781 PKT 2006">
+    <old-class-name>com.i2c.schedulerframework.util.LoadProperties</old-class-name>
+    <new-class-name>com.i2c.schedulerframework.util.ConfigrationHandler</new-class-name>
+  </rename-class>
+  <rename-class id="3AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Tue Dec 26 22:55:20.640 PKT 2006">
+    <old-class-name>com.i2c.schedulerframework.monitor.StatusInformer</old-class-name>
+    <new-class-name>com.i2c.schedulerframework.monitor.StatusInformerSocket</new-class-name>
+  </rename-class>
+  <rename-method id="2AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Tue Dec 26 23:19:01.078 PKT 2006">
+    <declaring-class-name>com.i2c.schedulerframework.util.ConfigrationHandler</declaring-class-name>
+    <declared-method-signature>(Ljava/lang/String;)V</declared-method-signature>
+    <old-method-name>loadInfo</old-method-name>
+    <new-method-name>loadConfigFile</new-method-name>
+  </rename-method>
+  <rename-field id="1AP0M50RZYVE7WQ5BIX0QKH0" creation-time="Wed Dec 27 22:57:04.078 PKT 2006">
+    <declaring-class-name>com.i2c.schedulerframework.main.ServiceMain</declaring-class-name>
+    <old-field-name>lgr</old-field-name>
+    <declared-field-type>Ljava/util/logging/Logger;</declared-field-type>
+    <new-field-name>mainLogger</new-field-name>
+  </rename-field>
+</refactor>
+

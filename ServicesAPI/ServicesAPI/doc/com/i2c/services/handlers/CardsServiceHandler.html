@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!--JBuilder QuickDoc-->
+<HEAD>
+<TITLE>Class com.i2c.services.handlers.CardsServiceHandler</TITLE><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</HEAD>
+<BODY>
+
+<H2>
+<FONT SIZE="-1">com.i2c.services.handlers</FONT>
+<BR>Class CardsServiceHandler</H2>
+<DL>
+<DT>public class <B>CardsServiceHandler</B>
+</DL>
+<DL><DD><p>Title: </p> <p>Description: This class provides services for Cards</p> <p>Copyright: Copyright (c) 2004</p> <p>Company: I2c Inc</p><DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Version:</B><DD>1.0</DD>
+<DT><B>Author:</B><DD>Agohar</DD>
+</DL>
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Constructor Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>CardsServiceHandler</H3>
+<PRE>
+private <B>CardsServiceHandler</B>(Connection&nbsp;_con)</PRE>
+<DL><DD>constructor<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection</DD>
+</DL>
+<HR>
+
+<TABLE BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<TR BGCOLOR="#CCCCFF"><TD COLSPAN=1><FONT SIZE="+2">
+<B>Method Detail</B>
+</FONT></TD></TR></TABLE>
+
+<H3>getInstance</H3>
+<PRE>
+public static CardsServiceHandler <B>getInstance</B>(Connection&nbsp;_con)</PRE>
+<DL><DD>This method creates and returns the instance of the CardsServiceHandler class<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>_con</CODE> - Connection</DD>
+<DT><B>Returns:</B><DD>CardsServiceHandler</DD>
+</DL>
+<HR>
+
+<H3>validateCard</H3>
+<PRE>
+public ServicesResponseObj <B>validateCard</B>(String&nbsp;cardNo,
+                                        String&nbsp;serviceId,
+                                        String&nbsp;applyFee,
+                                        String&nbsp;skipStatuses)</PRE>
+<DL><DD>This method validates the given card no against certain criteria<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>cardNo</CODE> - String -- Card No to validate</DD>
+<DD><CODE>serviceId</CODE> - String -- Service ID to apply the Fee</DD>
+<DD><CODE>applyFee</CODE> - String -- Apply Fee or Not</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>activateCard</H3>
+<PRE>
+public ServicesResponseObj <B>activateCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to activate the supplied card no<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>deActivateCard</H3>
+<PRE>
+public ServicesResponseObj <B>deActivateCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to deactivate the card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardStatus</H3>
+<PRE>
+public ServicesResponseObj <B>getCardStatus</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the current status of card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardStatus</H3>
+<PRE>
+public ServicesResponseObj <B>setCardStatus</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to chage the status of the card to the supplied one<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardPin</H3>
+<PRE>
+public ServicesResponseObj <B>getCardPin</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method will return the current PIN of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardPin</H3>
+<PRE>
+public ServicesResponseObj <B>setCardPin</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to change the PIN of the supplied Card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>getCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>getCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to get the AAC<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>setCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>setCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to set the ACC<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>resetCardAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>resetCardAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to reset the Access Code of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>updateCardHolderProfile</H3>
+<PRE>
+public ServicesResponseObj <B>updateCardHolderProfile</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to update the card holder profile<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>replaceStolenCard</H3>
+<PRE>
+public ServicesResponseObj <B>replaceStolenCard</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to replace the Stolen card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>validatePIN</H3>
+<PRE>
+public ServicesResponseObj <B>validatePIN</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method validates the PIN of supplied card no<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+<H3>validateAccessCode</H3>
+<PRE>
+public ServicesResponseObj <B>validateAccessCode</B>(ServicesRequestObj&nbsp;requestObj)</PRE>
+<DL><DD>This method is used to validate the AAC of the supplied card<DL><DD></DD></DL></DD>
+</DL>
+<DL><DT><B>Parameters:</B><DD><CODE>requestObj</CODE> - ServicesRequestObj -- Request Information</DD>
+<DT><B>Returns:</B><DD>ServicesResponseObj -- Response Information</DD>
+<DT><B>Throws:</B><DD><CODE>Exception</CODE> - </DD>
+</DL>
+<HR>
+
+</BODY>
+</HTML>

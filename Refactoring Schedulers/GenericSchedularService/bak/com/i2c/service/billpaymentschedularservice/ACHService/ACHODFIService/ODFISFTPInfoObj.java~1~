@@ -1,0 +1,80 @@
+package com.i2c.service.schedularservice.ACHService.ACHODFIService;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ODFISFTPInfoObj {
+  private String sftpURL = null;
+  private String sftpUser = null;
+  private String sftpPassword = null;
+  private String sftpPath = null;
+  private String filePrefix = null;
+  private String routingNo = null;
+  private String originID = null;
+  private String sftpPort = null;
+  private String notifyEmailAddress = null;
+
+
+  public String getFilePrefix() {
+    return filePrefix;
+  }
+  public void setFilePrefix(String filePrefix) {
+    this.filePrefix = filePrefix;
+  }
+  public void setOriginID(String originID) {
+    this.originID = originID;
+  }
+  public void setRoutingNo(String routingNo) {
+    this.routingNo = routingNo;
+  }
+  public void setSftpPassword(String sftpPassword) {
+    this.sftpPassword = sftpPassword;
+  }
+  public void setSftpPath(String sftpPath) {
+    this.sftpPath = sftpPath;
+  }
+  public void setSftpURL(String sftpURL) {
+    this.sftpURL = sftpURL;
+  }
+  public void setSftpUser(String sftpUser) {
+    this.sftpUser = sftpUser;
+  }
+  public String getSftpUser() {
+    return sftpUser;
+  }
+  public String getSftpURL() {
+    return sftpURL;
+  }
+  public String getSftpPath() {
+    return sftpPath;
+  }
+  public String getSftpPassword() {
+    return sftpPassword;
+  }
+  public String getRoutingNo() {
+    return routingNo;
+  }
+  public String getOriginID() {
+    return originID;
+  }
+  public String getNotifyEmailAddress() {
+    return notifyEmailAddress;
+  }
+  public void setNotifyEmailAddress(String notifyEmailAddress) {
+    this.notifyEmailAddress = notifyEmailAddress;
+  }
+  public String getSftpPort() {
+    return sftpPort;
+  }
+  public void setSftpPort(String sftpPort) {
+    this.sftpPort = sftpPort;
+  }
+
+
+}

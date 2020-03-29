@@ -1,0 +1,11 @@
+[PropertyInfo]
+batchTransAllowed,boolean,false,false, , ,false, 
+localconnIP,String,false,false, , ,false, 
+localConnPort,int,false,false, , ,false, 
+switchActive,boolean,false,false, , ,false, 
+switchId,String,false,false, , ,false, 
+[IconNames]
+
+
+
+

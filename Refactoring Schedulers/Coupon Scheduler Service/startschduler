@@ -1,0 +1,4 @@
+. /jenv
+. /setmcpenv
+CLASSPATH=$CLASSPATH:/y/CouponSchdularService/service/CouponSchedularService.jar
+java com.i2c.service.couponschedularservice.ServiceMain 1>CouponSchedularService.log 2>&1 &

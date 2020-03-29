@@ -1,0 +1,49 @@
+package com.i2c.schedulerframework.dao;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+/**
+ * <p>Title: Generic Scheduler Framework</p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2006</p>
+ *
+ * <p>Company: i2cinc</p>
+ *
+ * @author hrabbasi
+ * @version 1.0
+ */
+
+public interface BaseDAOI {
+        /**
+         * @return Connection
+         */
+        public abstract Connection getConnection();
+
+        /**
+         * Execute update query
+         * @param query String
+         * @throws Exception
+         */
+        public abstract boolean executeUpdate(String query) throws Exception;
+
+        /**
+         * Execute insert query
+         * @param query String
+         * @return boolean
+         * @throws Exception
+         */
+        public abstract boolean executeInsert(String query) throws Exception;
+
+        /**
+         * Execute Select quey
+         * @param query String
+         * @return ArrayList
+         * @throws Exception
+         */
+        public abstract ArrayList executeSelect(String query) throws Exception;
+
+
+
+}

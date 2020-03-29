@@ -1,0 +1,320 @@
+package com.i2c.service.billpaymentschedularservice.ACHService;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.i2c.service.util.*;
+import com.i2c.service.billpaymentschedularservice.ACHService.ACHODFIService.*;
+import com.i2c.service.billpaymentschedularservice.*;
+import java.sql.*;
+
+import com.i2c.service.billpaymentschedularservice.monitor.ACHServiceMonitorThread;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHServiceThread
+    extends Thread {
+  private String instanceName = null;
+  private ACHServiceMonitorThread monitorThread = null;
+
+  /**
+   * Main Constructor
+   * @param instance
+   */
+  public ACHServiceThread(String _instance,
+                          ACHServiceMonitorThread monitorThread) {
+    this.instanceName = _instance;
+    this.monitorThread = monitorThread;
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " ACHServiceThread Setting the Instance Name -->" + instanceName);
+  } //end constructor
+
+  /**
+   * Thread run method
+   */
+  public void run() {
+    ACHServiceHome serviceHome = null;
+    ACHServiceThread reportThreads = null;
+
+    Connection dbConn = null;
+
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " \n\n ACH Service Thread is Started ---> Run method of thread started\n----> Getting Database Connection ");
+
+      dbConn = DatabaseHandler.getConnection("ACHServiceThread",instanceName);
+      serviceHome = new ACHServiceHome(instanceName,dbConn);
+
+      while (true) {
+        try {
+
+          try {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Calling method for testing database connection");
+            testConnection(dbConn);
+          }
+          catch (SQLException tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- SQL Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHServiceThread",instanceName);
+              serviceHome = new ACHServiceHome(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Exception in creating new Connection");
+            }
+          }catch (Exception tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHServiceThread",instanceName);
+              serviceHome = new ACHServiceHome(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Exception in creating new Connection");
+            }
+          }catch (Throwable tstConTh) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Severe Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("ACHServiceThread",instanceName);
+              serviceHome = new ACHServiceHome(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHServiceThread -- Method Name: run --- Exception in creating new Connection");
+            }
+          }
+
+          //Loading the Initial Settings
+//          ServiceMain.loadInitSetting();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," \n\nUpdating ACH Monitoring Date Time ");
+          java.util.Date currDate = getCurrentDate();
+          CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," \n\nUpdating ACH Monitoring Date Time --- Current Date Time Got--->" + currDate);
+          monitorThread.setMonitorDateTime(currDate);
+          CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                    "Checking if service is allowed for this instance");
+          if (serviceHome.processScheduler(dbConn,Constants.USE_ACH)) {
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "\n\n Schdule ACH Transaction Thread loop Starting Active Threads --> " +
+                Constants.getActiveACHThreads());
+            Vector schduleACHList = serviceHome.checkSchduleInformation();
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "Schdule ACH Transaction are Avialable --->" +
+                schduleACHList.size());
+            if (schduleACHList != null && schduleACHList.size() > 0) {
+              //Invoke the ACH Transaction Threads
+              invokeSchduledACHThreads(dbConn,schduleACHList, serviceHome);
+              //If the Maximum Active Threads Limit is reached
+              if (Constants.getActiveACHThreads() >=
+                  Constants.MAX_ACTIVE_THREADS) {
+                CommonUtilities.getLogger(instanceName, Constants.ACH_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        " Waiting ACH Mode Condition-->" +
+                        Constants.DEFAULT_WAIT_TIME);
+                sleep(Constants.DEFAULT_WAIT_TIME);
+              } //end if
+            }else { //If no schdule ACH transaction are avialable then sleep for next schdule report
+              CommonUtilities.getLogger(instanceName, Constants.ACH_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      " No task to Schedule, Sleeping for default time-->" + Constants.DEFAULT_SLEEP_TIME);
+              sleep(Constants.DEFAULT_SLEEP_TIME);
+            } //end else
+          } // end if processACH
+          else {
+            CommonUtilities.getLogger(instanceName,
+                Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                " ACH Processing Is Not Allowed for this instance");
+            sleep(Constants.DEFAULT_SLEEP_TIME);
+          } // end else processACH
+        }
+        catch (SQLException ex) {
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(
+              LogLevel.getLevel(Constants.LOG_WARNING),
+              "SQL Exception in ACH Loop Serive Thread -->" + ex);
+          ACHStatusMailer.updateFailedACHInfo(ex.getMessage(),
+                                              CommonUtilities.getStackTrace(ex),
+                                              instanceName, false,
+                                              Constants.ACH_ERROR,dbConn);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        } //end catch
+        catch(Exception ex){
+          CommonUtilities.getLogger(instanceName,
+              Constants.ACH_SERVICE).log(
+              LogLevel.getLevel(Constants.LOG_WARNING),
+              "Exception in ACH Loop Serive Thread -->" + ex);
+          ACHStatusMailer.updateFailedACHInfo(ex.getMessage(),
+                                              CommonUtilities.getStackTrace(ex),
+                                              instanceName, true,
+                                              Constants.ACH_ERROR,dbConn);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        }
+        catch (Throwable th) {
+          System.out.println("Severe Exception in ACH Loop Serive Thread -->" + th.getStackTrace());
+          ACHStatusMailer.updateFailedACHInfo(th.getMessage(),
+                                              CommonUtilities.getStackTrace(th),
+                                              instanceName, true,
+                                              Constants.ACH_ERROR);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        } //end catch
+      } //end while
+    }
+    catch (Throwable thOuter) {
+      System.out.println(" Severe Exception in ACH Serive Thread -->" + thOuter.getStackTrace());
+      ACHStatusMailer.updateFailedACHInfo(thOuter.getMessage(),
+                                          CommonUtilities.getStackTrace(thOuter),
+                                          instanceName, true,
+                                          Constants.ACH_ERROR);
+    } //end catch
+  } //end run method
+
+  /**
+   * Method for invoking the Scheduled ACH Transactions
+   * @param schduleACHList: list containing the scheduled ACH Threads
+   * @param serviceHome: class for the database funstions
+   * @return: able to execute sucessfully or not
+   */
+
+  public boolean invokeSchduledACHThreads(Connection dbConn,Vector schduleACHList,
+                                          ACHServiceHome serviceHome) {
+    boolean flag = true;
+    ACHInfoObj infoObj = null;
+    ACHODFIServiceThread achThreads = null;
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " Invoking Schduled ACH Threads List Size -->" + schduleACHList.size() +
+                                   "<---- Max Active Threads --->" +
+                                   Constants.MAX_ACTIVE_THREADS);
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                   " Current ACH Active Threads --->" +
+                                   Constants.getActiveACHThreads());
+    try {
+      for (int i = 0;
+           (i < schduleACHList.size() &&
+            Constants.getActiveACHThreads() < Constants.MAX_ACTIVE_THREADS);
+           ++i) {
+        //Getting the information from the Scheduled ACH list
+        infoObj = (ACHInfoObj) schduleACHList.elementAt(i);
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                       " Current Active ACH Threads -->" +
+                                       Constants.getActiveACHThreads() +
+                                       "<----- Start Exceuting ODFI ---->" +
+                                       infoObj.getScheduledODFI());
+        //Update the Schduled ACH to Next Schduled
+        serviceHome.updateNextACHScheduleInfo(infoObj);
+        //Calling the ACH return method
+//        processACHReturn(serviceHome, infoObj);
+        //Increament the Currently Active Threads
+        Constants.setActiveACHThreads(Constants.getActiveACHThreads() + 1);
+        //Creating a new Report Thread
+        achThreads = new ACHODFIServiceThread(instanceName, infoObj, serviceHome,dbConn);
+        achThreads.start();
+        achThreads.join();
+      } //end for
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Invoke Schduled ACH Threads -->" + ex);
+      flag = false;
+    } //end catch
+    return flag;
+  } //end method
+
+  /**
+   * Method for calling the ACH return method
+   * @param serviceHome
+   */
+  public void processACHReturn(ACHServiceHome serviceHome, ACHInfoObj infoObj) {
+    try {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          " Method for calling the ACH return method -->");
+      //Calling the ACH return method
+      serviceHome.callACHReturns(infoObj);
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " Exception during Processing of ACH Return-->" +
+                                     ex);
+      ACHStatusMailer.updateFailedACHInfo(ex.getMessage(),
+                                          CommonUtilities.getStackTrace(ex),
+                                          instanceName, true,
+                                          Constants.ACH_ERROR);
+    } //end catch
+
+//    catch (Exception e)
+//    {
+//      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Process ACH retrun method from Thread -->"+e);
+//      ACHStatusMailer.updateFailedACHInfo(Constants.MAIL_ACH_ADMIN_MESSAGE +"\n\nInstance Name: "+instanceName+"\n\nMachine IP: "+Constants.getMachineIP()+"\n\nError Description : "+ e.getMessage()+ "\n\nStack Trace: " + CommonUtilities.getStackTrace(e),Constants.MAIL_ACH_ADMIN_SUBJECT,instanceName);
+//    }//end catchh
+  } //end method
+
+  private java.util.Date getCurrentDate() {
+    java.util.Date currDate = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                     " Getting current Date ");
+      currDate = new java.util.Date();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                     " Exception in Getting current Date --->" +
+                                     ex);
+    }
+    return currDate;
+  }
+
+  private void testConnection(Connection dbConn) throws SQLException{
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+
+    try {
+      CommonUtilities.getLogger(instanceName,
+                              Constants.ACH_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Method for testing database conenction ");
+        query.append("select business_date from system_variables");
+        stmt = dbConn.createStatement();
+        stmt.executeQuery(query.toString());
+        stmt.close();
+    } catch (SQLException ex) {
+      CommonUtilities.getLogger(instanceName,
+                              Constants.ACH_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Exception in testing database conenction --->" + ex + "<---Error Code--->" + ex.getErrorCode());
+        if(dbConn != null){
+            dbConn.close();
+        }
+        throw new SQLException("Exception in testing database connection...");
+    }finally{
+        if(stmt != null){
+            stmt.close();
+            stmt = null;
+        }
+    }
+
+  }
+
+} //end thread

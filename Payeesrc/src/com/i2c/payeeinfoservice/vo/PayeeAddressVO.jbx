@@ -1,0 +1,15 @@
+[PropertyInfo]
+address1,String,false,false, , ,true,<default>
+address2,String,false,false, , ,true,<default>
+addressChildId,String,false,false, , ,true,<default>
+addressCity,String,false,false, , ,true,<default>
+addressState,String,false,false, , ,true,<default>
+addressZIP,String,false,false, , ,true,<default>
+addressCountryCode,String,false,false,addressCountryCode,addressCountryCode,true,<default>
+payeeSNo,String,false,false,payeeSNo,payeeSNo,true,<default>
+addressSNo,String,false,false,addressSNo,addressSNo,true,<default>
+[IconNames]
+
+
+
+

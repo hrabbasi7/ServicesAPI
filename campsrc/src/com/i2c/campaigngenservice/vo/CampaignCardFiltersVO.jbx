@@ -1,0 +1,23 @@
+[PropertyInfo]
+ccfActDate,String,false,false, , ,true,<default>
+ccfAvailBalance,String,false,false, , ,true,<default>
+ccfCampaignId,int,false,false, , ,true,<default>
+ccfCardNo,String,false,false, , ,true,<default>
+ccfCardProgId,String,false,false, , ,true,<default>
+ccfCardStatus,String,false,false, , ,true,<default>
+ccfChAge,String,false,false, , ,true,<default>
+ccfChAgeDOB,String,false,false, , ,true,<default>
+ccfChBirthdayMmDd,String,false,false, , ,true,<default>
+ccfChEpLocGroup,String,false,false, , ,true,<default>
+ccfCity,String,false,false, , ,true,<default>
+ccfCountry,String,false,false, , ,true,<default>
+ccfExpirationDate,String,false,false, , ,true,<default>
+ccfLedgerBalance,String,false,false, , ,true,<default>
+ccfStakeHolderId,String,false,false, , ,true,<default>
+ccfState,String,false,false, , ,true,<default>
+ccfZipPostalCode,String,false,false, , ,true,<default>
+[IconNames]
+
+
+
+

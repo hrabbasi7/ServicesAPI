@@ -1,0 +1,56 @@
+package com.i2c.service.schedularservice.ACHService.ACHODFIService;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.sql.Connection;
+import com.i2c.service.util.*;
+import com.i2c.service.excep.*;
+import com.i2c.service.schedularservice.*;
+import com.i2c.service.schedularservice.ACHService.*;
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHODFIServiceThread extends Thread {
+ String instanceName = null;
+ ACHInfoObj achObj = null;
+ private ACHServiceHome home = null;
+ private Connection dbConn = null;
+
+  public ACHODFIServiceThread(String _instance,ACHInfoObj _achObj,ACHServiceHome home,Connection dbConn) {
+    //Setting the Report Info Object
+    instanceName = _instance;
+    achObj = _achObj;
+    this.home = home;
+    this.dbConn = dbConn;
+    CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),"ACHODFIServiceThread Setting the Instance Name -->"+instanceName+"<--- ODFI Schduled Date Time -->"+achObj.getScheduledDateTime()+"<--- ODFI -->"+achObj.getScheduledODFI());
+  }//end constrcutor
+
+  /**
+   * Thread run method
+   */
+  public void run() {
+    try {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST)," ACH ODFI Service Thread is Started --->"+instanceName+"<--- ODFI --->"+achObj.getScheduledODFI()+"<--- ODFI Schduled Date Time -->"+achObj.getScheduledDateTime());
+      CommonUtilities.getLogger(instanceName,
+                                Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+          "Calling method for processing ACH returns ");
+      //Calling the ACH return method
+      home.callACHReturns(achObj);
+      //Process the Scheduled ACH Transactions
+      new ACHODFIServiceHome(instanceName,achObj).processACHODFITransactions(dbConn);
+    }
+    catch (Exception ex)
+    {
+      CommonUtilities.getLogger(instanceName,Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING)," Exception in Processing ODFI ACH Thread -->"+ex);
+      ACHStatusMailer.updateFailedACHInfo(ex.getMessage(),CommonUtilities.getStackTrace(ex),instanceName,true, Constants.ACH_ERROR);
+    } finally{
+      Constants.setActiveACHThreads(Constants.getActiveACHThreads() - 1);
+    }//end finally
+  }//end run method
+}//end thread

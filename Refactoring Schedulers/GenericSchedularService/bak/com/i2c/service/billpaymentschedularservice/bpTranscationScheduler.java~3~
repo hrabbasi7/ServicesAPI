@@ -1,0 +1,108 @@
+package com.i2c.service.billpaymentschedularservice;
+
+import java.util.logging.Logger;
+import com.i2c.service.util.LogLevel;
+import com.i2c.service.billpaymentschedularservice.monitor.
+    PaymentServiceMonitor;
+import java.io.File;
+import com.i2c.service.util.Constants;
+import com.i2c.service.billpaymentschedularservice.PaymentService.
+    PaymentServiceThread;
+import com.i2c.utils.logging.I2cLogger;
+import com.i2c.service.billpaymentschedularservice.AdjestmentService.
+    AdjustmentServiceThread;
+import com.i2c.service.billpaymentschedularservice.ResponseService.
+    ResponseServiceThread;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class bpTranscationScheduler
+    extends Thread {
+
+  private Logger lgr = null;
+
+  public bpTranscationScheduler(Logger paymentLgr) {
+    this.lgr = paymentLgr;
+  }
+
+
+  public void run() {
+    /************************* Payment Service ***********************/
+    Logger paymentLogger = I2cLogger.getInstance(Constants.LOG_FILE_PATH +
+                                                 Constants.PAYMENT_SERVICE +
+                                                 File.separator +
+                                                 Constants.PAYMENT_SERVICE +
+                                                 "-log-%g.log",
+                                                 Constants.LOG_FILE_SIZE,
+                                                 Constants.LOG_FILE_NO,
+                                                 Constants.PAYMENT_SERVICE);
+    lgr.log(LogLevel.getLevel(Constants.LOG_FINEST),
+            " Before Creating Bill Payment File Processing Monitor Service Thread ");
+    PaymentServiceMonitor paymentServiceMonitor = new PaymentServiceMonitor(
+        Constants.CARD_INSTANCE_DB_CONN.getConnectionName(),
+        "Bill Payment Scheduler Service", paymentLogger);
+    paymentServiceMonitor.start();
+
+    lgr.log(LogLevel.getLevel(Constants.LOG_FINEST),
+            " Before Creating Bill Payment File Processing Service Thread ");
+    PaymentServiceThread paymentService = new PaymentServiceThread(Constants.
+        CARD_INSTANCE_DB_CONN.getConnectionName(), paymentServiceMonitor,
+        paymentLogger);
+    boolean paymentDone = paymentService.process();
+
+    if (paymentDone) {
+      processRespAdj(paymentLogger, paymentServiceMonitor);
+    }
+    else {
+      boolean searchRespAdj = searchRespAdj();
+      if (searchRespAdj) { //manual placemnet of payment file on FTP
+        processRespAdj(paymentLogger, paymentServiceMonitor);
+      }
+    }
+
+  }
+
+  private static void processRespAdj(Logger paymentLogger,
+                                     PaymentServiceMonitor
+                                     paymentServiceMonitor) throws
+      InterruptedException {
+    Thread.sleep(100000);
+    boolean adjustmentDone = false;
+    boolean responseDone = false;
+    while (responseDone == false || adjustmentDone == false) {
+      lgr.log(LogLevel.getLevel(Constants.LOG_FINEST),
+              " Before Creating Bill Response File Processing Service Thread ");
+      if (responseDone == false) {
+        ResponseServiceThread responseService = new
+            ResponseServiceThread(Constants.
+                                  CARD_INSTANCE_DB_CONN.
+                                  getConnectionName(),
+                                  paymentServiceMonitor,
+                                  paymentLogger);
+        responseDone = responseService.process();
+      }
+      if (adjustmentDone == false) {
+        lgr.log(LogLevel.getLevel(Constants.LOG_FINEST),
+                " Before Creating Bill Adjustment File Processing Service Thread ");
+        AdjustmentServiceThread adjustmentService = new
+            AdjustmentServiceThread(Constants.CARD_INSTANCE_DB_CONN.
+                                    getConnectionName(),
+                                    paymentServiceMonitor,
+                                    paymentLogger);
+        adjustmentDone = adjustmentService.process();
+      }
+      Thread.sleep(100000);
+    }
+  }
+
+}

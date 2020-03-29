@@ -1,0 +1,26 @@
+package com.i2c.billpaymentschedularservice.model;
+
+import java.io.*;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class FileConfigBean implements Serializable {
+
+  public void reset() {
+
+  }
+
+  public FileConfigBean() {
+    reset();
+  }
+}

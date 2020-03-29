@@ -1,0 +1,450 @@
+package com.i2c.service.schedularservice.ACHService;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.i2c.service.util.*;
+import com.i2c.service.schedularservice.*;
+import java.sql.Connection;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class ACHStatusMailer {
+
+  public static synchronized boolean updateFailedACHInfo(String errorMessage,
+      String stackTrace, String instanceName, boolean impMessage, String mailID) {
+    boolean flag = true;
+    AdminMailService adminEmail = null;
+    StringBuffer message = new StringBuffer();
+    String subject = null;
+    String email_to = null;
+    String email_from = null;
+
+    StringBuffer dbMessage = new StringBuffer();
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " Update ACH Failure Info Method Error Message --> " + errorMessage +
+                                   "<--- stackTrace -->" + stackTrace +
+                                   "<--- Important Message -->" + impMessage +
+                                   "<--- Mail ID -->" + mailID);
+    try {
+
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                     "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email ID--->" + mailID +
+                                     " Instance Name--->" + instanceName);
+      Vector info = null;
+      try {
+        info = CommonUtilities.getMailInfo(mailID, instanceName);
+
+        email_from = info.elementAt(0).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email From--->" +
+            email_from);
+        email_to = info.elementAt(1).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email To--->" +
+            email_to);
+        String email_cc = info.elementAt(2).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email CC--->" +
+            email_cc);
+        String email_subject = info.elementAt(3).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Subject--->" +
+            email_subject);
+        String email_hdr = info.elementAt(4).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Hdr--->" +
+            email_hdr);
+        String email_msg = info.elementAt(5).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Msg--->" +
+            email_msg);
+        String email_ftr = info.elementAt(6).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Ftr--->" +
+            email_ftr);
+
+        email_hdr = CommonUtilities.emailTokenizer(email_hdr,
+            Constants.MAIL_MSG_DELIMETER_STRING);
+
+        subject = email_subject;
+        message.append(email_hdr);
+        message.append("\n\nInstance Name: ");
+        message.append(instanceName);
+        message.append("\n\nMachine IP: ");
+        message.append(Constants.getMachineIP());
+        if (stackTrace != null) {
+          message.append("\n\nError Description : ");
+          message.append(errorMessage);
+          message.append("\n\nStack Trace: ");
+          message.append(stackTrace);
+        }
+        else {
+          message.append("\n\nWarning Description: ");
+          message.append(errorMessage);
+          message.append("\n\n\n " + email_ftr);
+        }
+
+        //Setting the Maximum ACH Failure Counter
+        Constants.setACHFailedCounter(Constants.getACHFailedCounter() + 1);
+
+        //Checking the Failed ACH Counter reaches Limit
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "Current Failed ACH Counter -->" +
+            Constants.getACHFailedCounter());
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Maximum Email Retry Limit -->" +
+            Constants.ACH_MAX_EMAIL_RETRY);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.MAX_LIMIT_SEND_EMAIL_COUNTER -->" +
+            Constants.ACH_MAX_LIMIT_SEND_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.ACH_CURRENT_SEND_EMAIL_COUNTER -->" +
+            Constants.ACH_CURRENT_SEND_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.INCREAMENT_EMAIL_COUNTER -->" +
+            Constants.ACH_INCREAMENT_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.ACH_START_FAILURE_EMAIL -->" +
+            Constants.ACH_START_FAILURE_EMAIL);
+
+        //If maximum limit is reached
+        if (!impMessage &&
+            Constants.getACHFailedCounter() >=
+            Constants.ACH_START_FAILURE_EMAIL) {
+          Constants.ACH_CURRENT_SEND_EMAIL_COUNTER = Constants.
+              ACH_CURRENT_SEND_EMAIL_COUNTER + 1;
+          Constants.ACH_START_FAILURE_EMAIL = (Constants.
+                                               ACH_CURRENT_SEND_EMAIL_COUNTER +
+                                               1) *
+              (long) Math.pow(Constants.ACH_INCREAMENT_EMAIL_COUNTER,
+                              Constants.ACH_START_POWER_FACTOR);
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              "<--- Constants.ACH_START_FAILURE_EMAIL --->" +
+              Constants.ACH_START_FAILURE_EMAIL +
+              "<--- Counter -->" +
+              Constants.getACHFailedCounter());
+          if (Constants.ACH_CURRENT_SEND_EMAIL_COUNTER ==
+              Constants.ACH_MAX_LIMIT_SEND_EMAIL_COUNTER) {
+            Constants.ACH_CURRENT_SEND_EMAIL_COUNTER = 0;
+            Constants.ACH_START_POWER_FACTOR = Constants.ACH_START_POWER_FACTOR +
+                1;
+            Constants.ACH_START_FAILURE_EMAIL = (Constants.
+                                                 ACH_START_FAILURE_EMAIL) *
+                (long)
+                Math.pow(Constants.ACH_INCREAMENT_EMAIL_COUNTER,
+                         Constants.ACH_START_POWER_FACTOR);
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "<--- In the Increament ACH Email Condition ACH_START_FAILURE_EMAIL-" +
+                Constants.ACH_START_FAILURE_EMAIL);
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "<--- ACH Counter -->" + Constants.getACHFailedCounter());
+          } //end send email counter
+        } //end if
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            " Important Message Flag -->" +
+            impMessage);
+      } // end inner try
+      catch (Exception ex1) {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                       " Exception in Getting mail Info -->" +
+                                       ex1);
+      }
+
+      //Incase of Important Message
+      if (impMessage) {
+        //Send the Email
+        adminEmail = new AdminMailService(message.toString(), subject, email_to,
+                                          email_from);
+        adminEmail.start();
+      } //end if
+      else {
+        //Send the Email
+        // For Emailing in case of Db failure
+        dbMessage.append(Constants.MAIL_REPORT_ADMIN_MESSAGE);
+        dbMessage.append("\n\nInstance Name: ");
+        dbMessage.append(instanceName);
+        dbMessage.append("\n\nMachine IP: ");
+        dbMessage.append(Constants.getMachineIP());
+        dbMessage.append("\n\nError Description : ");
+        dbMessage.append(errorMessage);
+        dbMessage.append("\n\nStack Trace: ");
+        dbMessage.append(stackTrace);
+
+        adminEmail = new AdminMailService(dbMessage.toString(),
+                                          Constants.MAIL_REPORT_ADMIN_SUBJECT,
+                                          Constants.MAIL_REPORT_ADMIN,
+                                          Constants.MAIL_REPORT_FROM);
+        adminEmail.start();
+      }
+    }
+    catch (Throwable ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Update ACH Failure Counter -->" + ex);
+      flag = false;
+    } //end catch
+    return flag;
+  } //end updateFailedReport Info
+
+  public static synchronized boolean updateFailedACHInfo(String errorMessage,
+      String stackTrace, String instanceName, boolean impMessage, String mailID,
+      Connection dbConn) {
+    boolean flag = true;
+    AdminMailService adminEmail = null;
+    StringBuffer message = new StringBuffer();
+    String subject = null;
+    String email_to = null;
+    String email_from = null;
+
+    StringBuffer dbMessage = new StringBuffer();
+
+    CommonUtilities.getLogger(instanceName,
+        Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+        " Update ACH Failure Info Method Error Message --> " + errorMessage +
+                                   "<--- stackTrace -->" + stackTrace +
+                                   "<--- Important Message -->" + impMessage +
+                                   "<--- Mail ID -->" + mailID);
+    try {
+
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_FINEST),
+                                     "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email ID--->" + mailID +
+                                     " Instance Name--->" + instanceName);
+      Vector info = null;
+      try {
+        info = CommonUtilities.getMailInfo(mailID, dbConn);
+
+        email_from = info.elementAt(0).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email From--->" +
+            email_from);
+        email_to = info.elementAt(1).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email To--->" +
+            email_to);
+        String email_cc = info.elementAt(2).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email CC--->" +
+            email_cc);
+        String email_subject = info.elementAt(3).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Subject--->" +
+            email_subject);
+        String email_hdr = info.elementAt(4).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Hdr--->" +
+            email_hdr);
+        String email_msg = info.elementAt(5).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Msg--->" +
+            email_msg);
+        String email_ftr = info.elementAt(6).toString();
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Calling CommonUtilities.getMailInfo --- Parameters passed --- Email Ftr--->" +
+            email_ftr);
+
+        email_hdr = CommonUtilities.emailTokenizer(email_hdr,
+            Constants.MAIL_MSG_DELIMETER_STRING);
+
+        subject = email_subject;
+        message.append(email_hdr);
+        message.append("\n\nInstance Name: ");
+        message.append(instanceName);
+        message.append("\n\nMachine IP: ");
+        message.append(Constants.getMachineIP());
+        if (stackTrace != null) {
+          message.append("\n\nError Description : ");
+          message.append(errorMessage);
+          message.append("\n\nStack Trace: ");
+          message.append(stackTrace);
+        }
+        else {
+          message.append("\n\nWarning Description: ");
+          message.append(errorMessage);
+          message.append("\n\n\n " + email_ftr);
+        }
+
+        //Setting the Maximum ACH Failure Counter
+        Constants.setACHFailedCounter(Constants.getACHFailedCounter() + 1);
+
+        //Checking the Failed ACH Counter reaches Limit
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "Current Failed ACH Counter -->" +
+            Constants.getACHFailedCounter());
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Maximum Email Retry Limit -->" +
+            Constants.ACH_MAX_EMAIL_RETRY);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.MAX_LIMIT_SEND_EMAIL_COUNTER -->" +
+            Constants.ACH_MAX_LIMIT_SEND_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.ACH_CURRENT_SEND_EMAIL_COUNTER -->" +
+            Constants.ACH_CURRENT_SEND_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.INCREAMENT_EMAIL_COUNTER -->" +
+            Constants.ACH_INCREAMENT_EMAIL_COUNTER);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            "<--- Constants.ACH_START_FAILURE_EMAIL -->" +
+            Constants.ACH_START_FAILURE_EMAIL);
+
+        //If maximum limit is reached
+        if (!impMessage &&
+            Constants.getACHFailedCounter() >=
+            Constants.ACH_START_FAILURE_EMAIL) {
+          Constants.ACH_CURRENT_SEND_EMAIL_COUNTER = Constants.
+              ACH_CURRENT_SEND_EMAIL_COUNTER + 1;
+          Constants.ACH_START_FAILURE_EMAIL = (Constants.
+                                               ACH_CURRENT_SEND_EMAIL_COUNTER +
+                                               1) *
+              (long) Math.pow(Constants.ACH_INCREAMENT_EMAIL_COUNTER,
+                              Constants.ACH_START_POWER_FACTOR);
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.ACH_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              "<--- Constants.ACH_START_FAILURE_EMAIL --->" +
+              Constants.ACH_START_FAILURE_EMAIL +
+              "<--- Counter -->" +
+              Constants.getACHFailedCounter());
+          if (Constants.ACH_CURRENT_SEND_EMAIL_COUNTER ==
+              Constants.ACH_MAX_LIMIT_SEND_EMAIL_COUNTER) {
+            Constants.ACH_CURRENT_SEND_EMAIL_COUNTER = 0;
+            Constants.ACH_START_POWER_FACTOR = Constants.ACH_START_POWER_FACTOR +
+                1;
+            Constants.ACH_START_FAILURE_EMAIL = (Constants.
+                                                 ACH_START_FAILURE_EMAIL) *
+                (long)
+                Math.pow(Constants.ACH_INCREAMENT_EMAIL_COUNTER,
+                         Constants.ACH_START_POWER_FACTOR);
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "<--- In the Increament ACH Email Condition ACH_START_FAILURE_EMAIL-" +
+                Constants.ACH_START_FAILURE_EMAIL);
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.ACH_SERVICE).log(
+                LogLevel.getLevel(Constants.LOG_FINEST),
+                "<--- ACH Counter -->" + Constants.getACHFailedCounter());
+          } //end send email counter
+        } //end if
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.ACH_SERVICE).log(LogLevel.getLevel(
+            Constants.LOG_FINEST),
+            " Important Message Flag -->" +
+            impMessage);
+      } // end inner try
+      catch (Exception ex1) {
+        CommonUtilities.getLogger(instanceName,
+            Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+                                       " Exception in Getting mail Info -->" +
+                                       ex1);
+      }
+
+      //Incase of Important Message
+      if (impMessage) {
+        //Send the Email
+        adminEmail = new AdminMailService(message.toString(), subject, email_to,
+                                          email_from);
+        adminEmail.start();
+      } //end if
+      else {
+        //Send the Email
+        // For Emailing in case of Db failure
+        dbMessage.append(Constants.MAIL_REPORT_ADMIN_MESSAGE);
+        dbMessage.append("\n\nInstance Name: ");
+        dbMessage.append(instanceName);
+        dbMessage.append("\n\nMachine IP: ");
+        dbMessage.append(Constants.getMachineIP());
+        dbMessage.append("\n\nError Description : ");
+        dbMessage.append(errorMessage);
+        dbMessage.append("\n\nStack Trace: ");
+        dbMessage.append(stackTrace);
+
+        adminEmail = new AdminMailService(dbMessage.toString(),
+                                          Constants.MAIL_REPORT_ADMIN_SUBJECT,
+                                          Constants.MAIL_REPORT_ADMIN,
+                                          Constants.MAIL_REPORT_FROM);
+        adminEmail.start();
+      }
+    }
+    catch (Throwable ex) {
+      CommonUtilities.getLogger(instanceName,
+          Constants.ACH_SERVICE).log(LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Update ACH Failure Counter -->" + ex);
+      flag = false;
+    } //end catch
+    return flag;
+  } //end updateFailedReport Info
+
+} //end clas

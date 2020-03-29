@@ -1,0 +1,86 @@
+package com.i2c.schedulerframework.model;
+
+import java.io.Serializable;
+
+/**
+ * <p>Title: </p>
+ *
+ * <p>Description: </p>
+ *
+ * <p>Copyright: Copyright (c) 2005</p>
+ *
+ * <p>Company: </p>
+ *
+ * @author not attributable
+ * @version 1.0
+ */
+public class EmailConfigBean
+    implements Serializable {
+
+  private String smtpServer = "";
+  private String recipientsTO[];
+  private String recipientsCC[];
+  private String recipientsBCC[];
+
+  private String subject = "";
+  private String message = "";
+  private String from = "";
+  private String titleFile = null;
+  private String fileName[];
+
+  public void reset() {
+    smtpServer = "";
+    recipientsTO[];
+    recipientsCC[];
+    recipientsBCC[];
+    String subject = "";
+    String message = "";
+    String from = "";
+    String titleFile = null;
+    String fileName[];
+
+
+  }
+
+  public EmailConfigBean() {
+    reset();
+  }
+
+
+  public void setFileTitle(String s) {
+    titleFile = s;
+  }
+
+  public void setSMTPServer(String s) {
+    smtpServer = s;
+  }
+
+  public void setRecipientsTO(String[] s) {
+    recipientsTO = s;
+  }
+
+  public void setRecipientsCC(String[] s) {
+    recipientsCC = s;
+  }
+
+  public void setRecipientsBCC(String[] s) {
+    recipientsBCC = s;
+  }
+
+  public void setSubject(String s) {
+    subject = s;
+  }
+
+  public void setFrom(String s) {
+    from = s;
+  }
+
+  public void setMessage(String s) {
+    message = s;
+  }
+
+  public void setFileName(String[] s) {
+    fileName = s;
+  }
+
+}

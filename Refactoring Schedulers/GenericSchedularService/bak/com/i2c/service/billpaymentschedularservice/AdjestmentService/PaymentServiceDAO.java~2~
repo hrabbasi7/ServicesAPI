@@ -1,0 +1,137 @@
+package com.i2c.service.billpaymentschedularservice.AdjestmentService;
+
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import com.i2c.service.util.CommonUtilities;
+import com.i2c.service.util.Constants;
+import com.i2c.service.util.LogLevel;
+import com.i2c.service.util.DatabaseHandler;
+
+import com.i2c.service.base.BaseHome;
+
+class AdjustmentServiceDAO extends BaseHome{
+
+  private String instanceID = null;
+  private Connection dbConn = null;
+
+  AdjustmentServiceDAO(String instanceID, Connection dbConn) {
+    this.instanceID = instanceID;
+    this.dbConn = dbConn;
+  }
+
+  boolean checkScheduleTime() {
+    boolean schTime = false;
+
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+    ResultSet rs = null;
+
+    try {
+      CommonUtilities.getLogger(instanceID, Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_FINEST), "PaymentServiceDAO --- checkScheduleTime ---  Method for checking Schedule Date Time ");
+      query.append(
+          "select schedule_date||' '||cutover_time pay_time from bp_processors");
+      query.append(" where schedule_date < ");
+      CommonUtilities.buildQueryInfo(query,
+                                     CommonUtilities.
+                                     getCurrentFormatDate(Constants.DATE_FORMAT), true);
+      query.append(" or (schedule_date = ");
+      CommonUtilities.buildQueryInfo(query,
+                                     CommonUtilities.
+                                     getCurrentFormatDate(Constants.DATE_FORMAT), true);
+      query.append(" and cutover_time <= ");
+      CommonUtilities.buildQueryInfo(query,
+                                     CommonUtilities.
+                                     getCurrentFormatTime(Constants.
+          EOD_TIME_FORMAT_MIN), true);
+      query.append(" ) order by pay_time ");
+      CommonUtilities.getLogger(instanceID, Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG), "PaymentServiceDAO --- checkScheduleTime ---  Method for checking Schedule Date Time --- Query--->" + query);
+      System.out.print("******************" + query.toString());
+      stmt = dbConn.createStatement();
+      rs = stmt.executeQuery(query.toString());
+      CommonUtilities.getLogger(instanceID, Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG), "PaymentServiceDAO --- checkScheduleTime ---  Method for checking Schedule Date Time --- Query Executed Result Set GOT--->" + rs);
+
+      if (rs.next()) {
+        if (rs.getString(1) != null && rs.getString(1).trim().length() > 0) {
+          CommonUtilities.getLogger(instanceID,
+                                    Constants.PAYMENT_SERVICE).log(
+              LogLevel.getLevel(Constants.LOG_FINEST),
+              "PaymentServiceDAO --- Payment File Schedule Time Arrived --- Found Payment File Processing Schedule Date Time--->" +
+              rs.getString(1));
+          schTime = true;
+        }
+      }
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceID, Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_WARNING), "PaymentServiceDAO --- checkScheduleTime ---  Exception in checking Schedule Date Time -->" + ex);
+    }
+    finally {
+      try {
+        if (rs != null) {
+          rs.close();
+          rs = null;
+        }
+        if (stmt != null) {
+          stmt.close();
+          stmt = null;
+        }
+      }
+      catch (SQLException ex1) {
+      }
+    }
+    return schTime;
+  }
+
+  void updateNextSchedule() {
+    StringBuffer query = new StringBuffer();
+    String newDate = null;
+    Statement stmt = null;
+
+    try {
+      CommonUtilities.getLogger(instanceID,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_FINEST),
+          "PaymentServiceDAO --- Method for updating batch schedule date --- ");
+      newDate = CommonUtilities.addDaysInDate(Constants.DATE_FORMAT,
+                                              CommonUtilities.
+                                              getCurrentFormatDate(Constants.
+          DATE_FORMAT), "1", Constants.DATE_FORMAT);
+      query.append("update bp_processors set schedule_date = ");
+      CommonUtilities.buildQueryInfo(query, newDate, true);
+
+      stmt = dbConn.createStatement();
+      CommonUtilities.getLogger(instanceID,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_FINEST),
+          "PaymentServiceDAO --- Going to execute the Query for updating payment schedule date --->" + query);
+      stmt.executeUpdate(query.toString());
+      CommonUtilities.getLogger(instanceID,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_FINEST),
+          "PaymentServiceDAO --- Query for updating batch schedule date executed successfully--->");
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceID,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_WARNING),
+          "PaymentServiceDAO --- Excpetion in updating batch schedule date-->" +
+          ex);
+    }
+    finally {
+      try {
+        if (stmt != null) {
+          stmt.close();
+          stmt = null;
+        }
+      }
+      catch (SQLException ex1) {
+      }
+    }
+  }
+}

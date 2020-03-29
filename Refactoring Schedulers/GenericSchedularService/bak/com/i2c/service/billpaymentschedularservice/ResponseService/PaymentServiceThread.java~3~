@@ -1,0 +1,307 @@
+package com.i2c.service.billpaymentschedularservice.ResponseService;
+
+import java.io.*;
+import java.sql.*;
+
+import com.i2c.billpayment.jobs.*;
+import com.i2c.billpayment.vo.*;
+import com.i2c.service.billpaymentschedularservice.monitor.*;
+import com.i2c.service.util.*;
+import com.i2c.service.billpaymentschedularservice.FTPService.FTPInfoVO;
+import com.i2c.service.billpaymentschedularservice.FTPService.JFtp;
+
+
+
+public class PaymentServiceThread
+    extends Thread {
+  private String instanceName = null;
+  private PaymentServiceMonitor monitorThread = null;
+  static BPFileStatistics bpPaymentFileStatus;
+  public PaymentServiceThread(String instanceName,PaymentServiceMonitor monitorThread) {
+    this.instanceName = instanceName;
+    this.monitorThread = monitorThread;
+  }
+
+  public void run() {
+
+    PaymentServiceDAO paymentServiceDAO = null;
+    Connection dbConn = null;
+    Connection cardInstDBConn = null;
+    boolean batchTime = false;
+    StringBuffer paymentTransStatus = null;
+    PaymentServiceMailer batchMailer = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "PaymentServiceThread -- Method Name: run --- ACHBatchLoadReturn Thread is started");
+
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(
+      Constants.LOG_FINEST),
+          "PaymentServiceThread -- Method Name: run --- Getting Database Connection for instance --->" + instanceName);
+      dbConn = DatabaseHandler.getConnection("ACHLoadBatchReturnServiceThread",instanceName);
+      paymentServiceDAO = new PaymentServiceDAO(instanceName,dbConn);
+
+      while (true) {
+
+        try {
+          try {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"PaymentServiceThread -- Method Name: run --- Calling method for testing database connection");
+            testConnection(dbConn);
+          }catch (SQLException tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"PaymentServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("PaymentServiceThread",instanceName);
+              paymentServiceDAO = new PaymentServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }catch (Exception tstConEx) {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"PaymentServiceThread -- Method Name: run --- Exception in testing database connection -- Creating new Connection");
+            try{
+              dbConn = DatabaseHandler.getConnection("PaymentServiceThread",instanceName);
+              paymentServiceDAO = new PaymentServiceDAO(instanceName,dbConn);
+            }catch(Exception ex){
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.PAYMENT_SERVICE).log(LogLevel.getLevel(Constants.LOG_CONFIG),"ACHLoadBatchReturnServiceThread  -- Method Name: run --- Exception in creating new Connection");
+            }
+          }
+
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.PAYMENT_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nGetting current date time for updating ACH_LOAD_BATCH_RETURN_SERVICE monitoring Date Time ");
+          java.util.Date currDate = getCurrentDate();
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.PAYMENT_SERVICE).log(LogLevel.
+              getLevel(Constants.LOG_FINEST),
+              " \n\nUpdating ACH_LOAD_BATCH_RETURN_SERVICE Monitoring Date Time --- Current Date Time Got--->" +
+              currDate);
+          monitorThread.setMonitorDateTime(currDate);
+          // Check Service allowed for Instance
+          if (paymentServiceDAO.processScheduler(dbConn,Constants.USE_BILL_PAYMENT_PROCESSING)) {
+            batchTime = paymentServiceDAO.checkScheduleTime();
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.PAYMENT_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "PaymentServiceThread --- run --- Response received from checkScheduleTime ---> " +
+                    batchTime);
+            if (batchTime) {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.PAYMENT_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "PaymentServiceThread --- run --- Invoking Bill Payment File processing");
+              try {
+                /*************<<<*************>>>>>***********/
+                cardInstDBConn = DatabaseHandler.getConnection("PaymentServiceThread","card_inst");
+                paymentTransStatus = invokePaymentProcessing(cardInstDBConn,paymentServiceDAO);
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.PAYMENT_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "PaymentServiceThread --- run --- Sending success email");
+
+                batchMailer = new PaymentServiceMailer(Constants.PAYMENT_SRV_SUCC, instanceName, null,
+                    paymentTransStatus.toString(),dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              catch (Exception procEx) {
+                CommonUtilities.getLogger(instanceName,
+                                          Constants.PAYMENT_SERVICE).
+                    log(LogLevel.getLevel(Constants.LOG_FINEST),
+                        "PaymentServiceThread --- run --- Exception in processing of Bill Payment File Processing --- Emailing to Admin-->" + procEx);
+                batchMailer = new PaymentServiceMailer(Constants.
+                    PAYMENT_SRV_FAIL, instanceName, Constants.getMachineIP(),
+                    procEx.toString(), CommonUtilities.getStackTrace(procEx),dbConn);
+                batchMailer.sendEmailNotification();
+              }
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.PAYMENT_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "PaymentServiceThread --- run --- Updating the NEXT Schedule Date");
+              paymentServiceDAO.updateNextSchedule();
+            } //end if check schTime arrived
+            else {
+              CommonUtilities.getLogger(instanceName,
+                                        Constants.PAYMENT_SERVICE).
+                  log(LogLevel.getLevel(Constants.LOG_FINEST),
+                      "PaymentServiceThread --- run --- Payment File processing Time not arrived -- Sleeping for default time");
+              sleep(Constants.DEFAULT_SLEEP_TIME);
+            }
+          } //end if check isAllowed
+          else {
+            CommonUtilities.getLogger(instanceName,
+                                      Constants.PAYMENT_SERVICE).
+                log(LogLevel.getLevel(Constants.LOG_FINEST),
+                    "PaymentServiceThread --- run --- Payment File processing is not allowed for this instance");
+            sleep(Constants.DEFAULT_SLEEP_TIME);
+          }
+        } //end inner try
+        catch (Exception ex) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.PAYMENT_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_FINEST),
+                  "PaymentServiceThread --- Excpetion in Bill Payment File processing--->" +
+                  ex);
+          sleep(Constants.DEFAULT_SLEEP_TIME);
+        } //end inner catch
+      } //end while
+    } //end outer try
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_FINEST),
+              "PaymentServiceThread --- Outer Catch -- Excpetion in Payment Service Thread--->" +
+              ex);
+    }
+  } //end run
+
+  private StringBuffer invokePaymentProcessing(Connection dbConn, PaymentServiceDAO paymentDao) throws Exception {
+    FTPInfoVO ftpVo = null;
+    BillPaymentProcessor bp = null;
+    JFtp ftpServer = null;
+    StringBuffer logPath = new StringBuffer();
+    StringBuffer returnMsg = null;
+    StringBuffer ouputPath = new StringBuffer();
+
+    try {
+      logPath.append(Constants.LOG_FILE_PATH + File.separator + instanceName +
+                     File.separator +
+                     Constants.ACH_LOAD_BATCH_RETURN_LOG_FOLDER);
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "PaymentServiceThread --- invokePaymentProcessing --- Log File Path to be passed--->" +
+              logPath);
+
+      if (!new File(logPath.toString()).exists()) {
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.PAYMENT_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "PaymentServiceThread --- invokePaymentProcessing --- Creating Log File Folder(s)--->" +
+                new File(logPath.toString()).mkdirs());
+      }
+      if (Constants.PAYMENT_OUTPUT_PATH != null &&
+          Constants.PAYMENT_OUTPUT_PATH.trim().length() > 0) {
+        ouputPath.append(Constants.PAYMENT_OUTPUT_PATH +
+                         File.separator + instanceName);
+        CommonUtilities.getLogger(instanceName,
+                                  Constants.PAYMENT_SERVICE).
+            log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                "PaymentServiceThread --- invokePaymentProcessing --- Output Path to be passed--->" +
+                ouputPath);
+        if (!new File(ouputPath.toString()).exists()) {
+          CommonUtilities.getLogger(instanceName,
+                                    Constants.PAYMENT_SERVICE).
+              log(LogLevel.getLevel(Constants.LOG_CONFIG),
+                  "PaymentServiceThread --- invokePaymentProcessing --- Creating OutPut Path Folder(s)--->" +
+                  new File(ouputPath.toString()).mkdirs());
+        }
+      }else {
+        CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "PaymentServiceThread --- invokePaymentProcessing --- PaymentServiceThread Output Path value does not exist in configuration file-->" + Constants.PAYMENT_OUTPUT_PATH);
+
+        throw new Exception(
+            "PaymentServiceThread Path value does not exist in configuration file--->" +
+            Constants.PAYMENT_OUTPUT_PATH);
+      }
+      /*************************************/
+      bp = new BillPaymentProcessor (logPath.toString(), dbConn);
+      bp.processBillPayments(ouputPath.toString() , "1");
+
+      if (BillPaymentProcessor.filsStatsObj.isFileCreated()){
+        ftpVo = new FTPInfoVO();
+        returnMsg = new StringBuffer();
+        returnMsg.append("File Name : " + BillPaymentProcessor.filsStatsObj.getFileName());
+        returnMsg.append("\nTotal Amount : " + BillPaymentProcessor.filsStatsObj.getTotalAmount());
+        returnMsg.append("\nTotal Batches : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalBatches());
+        returnMsg.append("\nTotal Failed Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalFailedTrans());
+        returnMsg.append("\nTotal SucessFul Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalSuccessTrans());
+        returnMsg.append("\nTotal Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalTrans());
+        //getting ftp information from DB
+        ftpVo = paymentDao.getPaymentFtpInfo();
+        ftpServer = new JFtp(ftpVo);
+        ftpServer.connect();
+        ftpServer.upload(bpPaymentFileStatus.getFileName());
+
+      }else{
+        returnMsg = new StringBuffer();
+        returnMsg.append("No Payment File is created....");
+        returnMsg.append("\nFile Name : " + BillPaymentProcessor.filsStatsObj.getFileName());
+        returnMsg.append("\nTotal Amount : " + BillPaymentProcessor.filsStatsObj.getTotalAmount());
+        returnMsg.append("\nTotal Batches : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalBatches());
+        returnMsg.append("\nTotal Failed Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalFailedTrans());
+        returnMsg.append("\nTotal SucessFul Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalSuccessTrans());
+        returnMsg.append("\nTotal Transactions : " +
+                         BillPaymentProcessor.filsStatsObj.getTotalTrans());
+
+      }
+      /*****************************************/
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_CONFIG),
+              "PaymentServiceThread --- invokePaymentProcessing --- Resposne Received from API --->" +
+              returnMsg);
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).
+          log(LogLevel.getLevel(Constants.LOG_WARNING),
+              "PaymentServiceThread --- invokePaymentProcessing --- Exception in processing of Payment File Processing--->" +
+              ex);
+      throw new Exception("Exception in processing of Payment Service Thread--->" +
+                          ex);
+
+    }
+    return returnMsg;
+  } //end method
+
+  private java.util.Date getCurrentDate() {
+    java.util.Date currDate = null;
+    try {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.
+          getLevel(Constants.LOG_FINEST),
+          " Getting current Date ");
+      currDate = new java.util.Date();
+    }
+    catch (Exception ex) {
+      CommonUtilities.getLogger(instanceName,
+                                Constants.PAYMENT_SERVICE).log(
+          LogLevel.getLevel(Constants.LOG_WARNING),
+          " Exception in Getting current Date --->" + ex);
+    }
+    return currDate;
+  }
+
+  private void testConnection(Connection dbConn) throws SQLException {
+    StringBuffer query = new StringBuffer();
+    Statement stmt = null;
+
+    CommonUtilities.getLogger(instanceName,
+                              Constants.ACH_BATCH_CONFIG_SERVICE).log(LogLevel.
+        getLevel(Constants.LOG_FINEST),
+        " Method for testing database conenction ");
+
+    query.append("select business_date from system_variables");
+    stmt = dbConn.createStatement();
+    stmt.executeQuery(query.toString());
+    stmt.close();
+  }
+
+
+}

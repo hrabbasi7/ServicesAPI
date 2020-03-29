@@ -1,0 +1,21 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Report Notification
+ 
+Schedule No. :  $reportSchNo
+Report :  $reportName
+Admin Site URL :  $adminSiteURL
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dear Subscriber,
+
+The report with schedule number $reportSchNo has been generated. You can view this report by visiting the admin site and following the steps listed below.
+
+1). Log on to the admin site. 
+2). Select the "Reports -> Report Schedules" menu option. This will display the list of all your scheduled reports.  
+3). Click the "Find" button and on the criteria page, specify the Report Schedule No. $reportSchNo.  
+4). Click "OK".  
+5). The report summary for the specified schedule number will be displayed. Click "View Report" to see the report.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This system generated email is sent to you based on the notification settings for this report. Please contact your service provider for any queries or guidance.

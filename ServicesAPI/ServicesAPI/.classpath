@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/ach.jar"/>
+	<classpathentry kind="lib" path="lib/activation.jar"/>
+	<classpathentry kind="lib" path="lib/AuthConnectionService.jar"/>
+	<classpathentry kind="lib" path="lib/ChAuthService.jar"/>
+	<classpathentry kind="lib" path="lib/client-fur.jar"/>
+	<classpathentry kind="lib" path="lib/efundOnline.jar"/>
+	<classpathentry kind="lib" path="lib/hsm.jar"/>
+	<classpathentry kind="lib" path="lib/hsmapi.jar"/>
+	<classpathentry kind="lib" path="lib/hsmhandler.jar"/>
+	<classpathentry kind="lib" path="lib/ifxjdbc.jar"/>
+	<classpathentry kind="lib" path="lib/mail.jar"/>
+	<classpathentry kind="lib" path="lib/mailapi.jar"/>
+	<classpathentry kind="lib" path="lib/soap.jar"/>
+	<classpathentry kind="lib" path="lib/soapclient.jar"/>
+	<classpathentry kind="lib" path="lib/SolsparkAPI.jar"/>
+	<classpathentry kind="lib" path="lib/transferapi.jar"/>
+	<classpathentry kind="lib" path="lib/xerces.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/HSMConnectionPooling.jar"/>
+	<classpathentry kind="lib" path="lib/HSMConnectionPoolingWrapper.jar"/>
+	<classpathentry kind="lib" path="lib/HSMDBManager.jar"/>
+	<classpathentry kind="lib" path="lib/HSMPool.jar"/>
+	<classpathentry kind="lib" path="lib/HSMPoolset.jar"/>
+	<classpathentry kind="lib" path="lib/HSMServiceNew.jar"/>
+	<classpathentry kind="lib" path="lib/I2cUtils.jar"/>
+	<classpathentry kind="lib" path="lib/JDOM.JAR"/>
+	<classpathentry kind="lib" path="lib/Logger.jar"/>
+	<classpathentry kind="lib" path="lib/Notifier.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

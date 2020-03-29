@@ -1,0 +1,23 @@
+[PropertyInfo]
+ctfAcquirerId,String,false,false, , ,true,<default>
+ctfAmountProccessed,String,false,false, , ,true,<default>
+ctfCampaignId,int,false,false, , ,true,<default>
+ctfMerchentCity,String,false,false, , ,true,<default>
+ctfMerchentCountry,String,false,false, , ,true,<default>
+ctfMerchentState,String,false,false, , ,true,<default>
+ctfMerchentZipPCode,String,false,false, , ,true,<default>
+ctfMessageType,String,false,false, , ,true,<default>
+ctfNetworkId,String,false,false, , ,true,<default>
+ctfResponseCode,String,false,false, , ,true,<default>
+ctfServiceId,String,false,false, , ,true,<default>
+ctfTransDate,String,false,false, , ,true,<default>
+ctfTransEpLocGroup,String,false,false, , ,true,<default>
+ctfTransStkHolderId,String,false,false, , ,true,<default>
+ctfTransTime,String,false,false, , ,true,<default>
+ctfTransType,String,false,false, , ,true,<default>
+ctfTransMerchantId,String,false,false,ctfTransMerchantId,ctfTransMerchantId,true,<default>
+[IconNames]
+
+
+
+
